@@ -1,43 +1,37 @@
-
+# https://docs.python.org/3/library/subprocess.html#popen-objects
 
 from multiprocessing import Process, Value, Array
-import threading
-
-import time
-
+import threading,time,os
+import subprocess
 currProcess = None
 
-
-def f1():
+def f1(filename):
     cnt = 0
-    while cnt < 20 :
-        print('I am in f1')
-        time.sleep(2)
-        cnt += 1
 
-def startProcess2(num):
-    global currProcess
-    if num == '1':
-        if currProcess != None:
-            currProcess.kill()
-        
-        p = threading.Thread(target=f1)
-        currProcess = p
-        p.daemon = True
-        p.start()
-        #p.join()
-
-
+    subprocess.Popen(["python", "test_audio.py",filename])
+    
+    #os.system('python test_audio.py ' + filename)  
+    
+    while False:
+        print('I am alive ' + filename)
+        time.sleep(1)
 
 def startProcess(num):
     global currProcess
-    if num == '1':
+    if True:
         if currProcess != None:
-            currProcess.terminate() 
-        p = Process(target=f1)
-        currProcess = p
+            print('killing old process')
+            print(currProcess)
+            currProcess.terminate()
+            #currProcess.join()
+            #if currProcess.is_alive():
+            #    print('old still alive')
+            currProcess = None
+        #p = Process(target=f1,args=[num])
+        currProcess = subprocess.Popen(["python", "test_audio.py",num])
         #p.daemon = True
-        p.start()
+        #currProcess = p
+        #p.start()
         #p.join()
 
 

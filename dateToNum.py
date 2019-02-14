@@ -38,18 +38,13 @@ def numToWords(num,join=True):
 
 #example usages:
 # print numToWords(0)
-# print numToWords(11)
-# print numToWords(110)
 # print numToWords(1001000025)
-# print numToWords(123456789012)
 
 import os
 
 def getFileFromNum(wordToConvert):
     dirname = './hindinumbers/'
     return dirname + wordToConvert + '_hindi.mp3'
-
-
 
 def playWord(filename):
     cmdToRun = 'nvlc  %s  --play-and-exit --no-osd' % (filename)
@@ -59,6 +54,21 @@ def playWord(filename):
         os.system(cmdToRun)
     else:
         print ("word File not exist")
+
+
+from multiprocessing import Process, Value, Array
+import threading,time,os
+currProcess = None
+
+def startNonBlockingProcess(targetProcess,filename):
+    global currProcess
+    if currProcess != None:
+        currProcess.terminate() 
+        p = Process(target=targetProcess,filename)
+        currProcess = p
+        #p.daemon = True
+        p.start()
+        #p.join()
 
 def date2audioFiles(bookDate):
     from datetime import datetime
@@ -74,7 +84,6 @@ def date2audioFiles(bookDate):
     #dateFileList = map(getFileFromNum,dateFileList)
     return dateFileList
 
-aa = date2audioFiles('12-April-2019')
-print(aa)
 
-
+# aa = date2audioFiles('12-April-2019')
+# print(aa)
