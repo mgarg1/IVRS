@@ -1,14 +1,37 @@
 from datetime import datetime,timedelta
+from tinydb import TinyDB, Query,where
 
-def checkIfReg(phoneNum):
-    return false
+phoneDB = TinyDB('phoneDB.json')
+
+BOOK_LIMIT = 2
+
+def isNumRegistered(phoneNum):
+    return len(phoneDB.search(where('phoneNum') == phoneNum)) > 0
 
 def findNextDates(numOfDays=5,today=datetime.now()):
     days = []
-    for x in range(1,numOfDays+1):
-        thisDay = today+timedelta(days=x)
-        days.append(thisDay.strftime("%d-%B-%Y"))
+    currDelta = 1
+    while len(days) < numOfDays:
+        thisDay = today+timedelta(days=currDelta)
+        thisDay = thisDay.strftime("%d-%B-%Y")
+        if totalBookOnDate(thisDay) < BOOK_LIMIT:
+            days.append(thisDay)
+        currDelta += 1
     return days
+
+def totalBookOnDate(bookDate):
+    #phoneData = Query()
+    totalBookings = phoneDB.search(where('bookDate') == bookDate)
+    return len(totalBookings)
+
+
+def storeBooking(phoneNum,bookDate):
+    phoneDB.insert({'phoneNum': phoneNum, 'bookDate': bookDate})
+
+
+def removeStaleBooking(staleDate):
+    phoneData = Query()
+    phoneDB.remove(phoneData.bookDate == staleDate)
 
 
 #aa = findNextDates()

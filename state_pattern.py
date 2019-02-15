@@ -1,5 +1,5 @@
 import abc
-from dataAccess import checkIfReg,findNextDates
+from dataAccess import findNextDates,isNumRegistered,storeBooking
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -61,7 +61,8 @@ class bookState(State):
         #print('Booking State\n 1-Today\n2-Tomorrow\n3-DayAfter')
         self.stateMessage = 'Booking State:\n'
         for x in range(0,len(self.availDates)):
-            self.stateMessage = self.stateMessage + 'Press ' +str(x+1)+' for '+self.availDates[x])
+            self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
+        
         self.speak()
 
     def checkKeyPress(self,numPressed):
@@ -91,12 +92,15 @@ class bookState(State):
 class confirmState(State):
     def __init__(self,bookDate):
         self.bookDate = bookDate
-        self. 'You have selected ' + bookDate)
-        print('Confirm State\n1-To Confirm\n2-To Reselect')
+        self.stateMessage = f'''You have selected {bookDate}
+        Confirm State\n1-To Confirm\n2-To Reselect
+        '''
+        self.speak()
 
     def press1(self, atm):
         print('Booked')
         # Save to DB, SMS to user
+        storeBooking(atm.phoneNum, self.bookDate)
         exit()
 
     def press2(self, atm):
@@ -104,7 +108,8 @@ class confirmState(State):
 
 class alreadyState(State):
     def __init__(self):
-        print('You are already Registered\n1-To Update\n2-To Cancel')
+        self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
+        self.speak()
 
     def press1(self,atm):
         atm.state = bookState()
@@ -116,8 +121,9 @@ class alreadyState(State):
         atm.state = talkState()
 
 class ATM:
-    def __init__(self,isReg=False):
-        if isReg:
+    def __init__(self,phoneNum='9876543210'):
+        self.phoneNum = phoneNum
+        if isNumRegistered(phoneNum):
             self.state = alreadyState()
         else:
             self.state = welcomeState()
@@ -132,21 +138,3 @@ if __name__ == "__main__":
        inRes = input()
        funName = atm.press(int(inRes))
 
-    #   atm.press2() # default state is no card error no card
-    #   atm.press1() # ok state is has card
-    #   atm.press1() # error  card already in
-    #   atm.press2() # ok  state become no card
-    #   atm.press2() # error no card
-    #
-
-
-#if __name__ == "__main__":
-#    while(1):
-#        inRes = input()
-#        if inRes == '1':
-#            print('pressed 1')
-#        elif inRes == '2':
-#            print('pressed 2')
-#        else:
-#            print('invalid choice')
-#    
