@@ -33,7 +33,6 @@ def removeStaleBooking(staleDate):
     phoneData = Query()
     phoneDB.remove(phoneData.bookDate == staleDate)
 
-
 #aa = findNextDates()
 #for x in aa:
 #    print(x)

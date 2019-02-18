@@ -41,11 +41,14 @@ class State(object,metaclass = abc.ABCMeta):
 
     def speak(self):
         print(self.stateMessage)
+        map(playWord,self.audioList)
+        #playAudioList(self.audioList)
 
 class welcomeState(State):
     def __init__(self):
         self.stateMessage = 'welcome to IVRS: \n1-To Book\n2-To Talk\n'
         # print('welcome to IVRS: \n1-To Book\n2-To Talk\n')
+        self.audioList = ['welcomeStateMsg.wav']
         self.speak()
 
     def press1(self, atm):
@@ -62,9 +65,14 @@ class bookState(State):
         self.stateMessage = 'Booking State:\n'
         for x in range(0,len(self.availDates)):
             self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
-        
+            self.audioList += self.createAudioList(str(x+1),self.availDates[x])
         self.speak()
 
+
+    def createAudioList(keyNum,availDate):
+        return ['press.wav'] + num2audio(str(x+1)) + ['for.wav'] + date2audio(availDate)
+        #return date2audio(availDate) + ['keliye.wav'] + num2audio(str(x+1) + ['dabayein.wav']
+        
     def checkKeyPress(self,numPressed):
         atm.state = confirmState(self.availDates[numPressed-1])
     
@@ -79,7 +87,7 @@ class bookState(State):
     def press5(self, atm):
         self.checkKeyPress(5)
     def press6(self, atm):
-        self.checkKeyPress(6)
+        self.checkKeyPress(6):
     def press7(self, atm):
         self.checkKeyPress(7)
     def press8(self, atm):
@@ -95,6 +103,7 @@ class confirmState(State):
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
         '''
+        self.audioList = ['confirmStateSelMsg.wav'] + date2audioFiles(bookDate) + ['confirmStateConMsg.wav'] 
         self.speak()
 
     def press1(self, atm):
@@ -109,6 +118,7 @@ class confirmState(State):
 class alreadyState(State):
     def __init__(self):
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
+        self.audioList = ['alreadyStateMsg.wav']
         self.speak()
 
     def press1(self,atm):

@@ -16,11 +16,11 @@ def numToWords(num,join=True):
     else:
         numStr = '%d'%num
         numStrLen = len(numStr)
-        groups = (numStrLen+2)/3
+        groups = int((numStrLen+2)/3)
         numStr = numStr.zfill(groups*3)
         for i in range(0,groups*3,3):
             h,t,u = int(numStr[i]),int(numStr[i+1]),int(numStr[i+2])
-            g = groups-(i/3+1)
+            g = int(groups-(i/3+1))
             if h>=1:
                 words.append(units[h])
                 words.append('hundred')
@@ -32,7 +32,7 @@ def numToWords(num,join=True):
                 else: words.append(tens[t])
             else:
                 if u>=1: words.append(units[u])
-            if (g>=1) and ((h+t+u)>0): words.append(thousands[g]+',')
+            if (g>=1) and ((h+t+u)>0): words.append(thousands[g])
     if join: return ' '.join(words)
     return words
 
@@ -45,9 +45,13 @@ def numToWords(num,join=True):
 
 import os
 
-def playWord(word):
+def getFileFromNum(wordToConvert):
     dirname = './hindinumbers/'
-    filename = dirname + word + '_hindi.mp3'
+    return dirname + wordToConvert + '_hindi.mp3'
+
+
+
+def playWord(filename):
     cmdToRun = 'nvlc  %s  --play-and-exit --no-osd' % (filename)
     print(filename)
     if os.path.isfile(filename):
@@ -56,29 +60,21 @@ def playWord(word):
     else:
         print ("word File not exist")
 
-def dateToSpeech(day,month,year):
-    dayText = numToWords(day)
-    yearText = numToWords(year)
-    fullDateText = dayText + ' ' + month + ' ' + yearText
-    fullDateWords = fullDateText.split()
+def date2audioFiles(bookDate):
+    from datetime import datetime
+    datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
 
-    for word in fullDateWords:
-        print(word)
-        word = word.replace(',', '')
-        playWord(word)
+    #print(numToWords(13))
+    day = numToWords(int(datetime_obj.day),False)
+    month = datetime_obj.strftime('%B')
+    year = numToWords(int(datetime_obj.year),False)
 
-dateToSpeech(12,'one',2012)
+    dateFileList = day + [month] + year
+    dateFileList = [getFileFromNum(x) for x in dateFileList]
+    #dateFileList = map(getFileFromNum,dateFileList)
+    return dateFileList
 
-def dateToSpeech2(day,month,year):
-    playWord(numToWords(day))
-    playWord(month)
-    playWord(numToWords(year))
+aa = date2audioFiles('12-April-2019')
+print(aa)
 
 
-def main():
-
-    # play
-
-    checkExistingReg()
-    playWelcomeMsg()
-    
