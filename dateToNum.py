@@ -47,28 +47,32 @@ def getFileFromNum(wordToConvert):
     return dirname + wordToConvert + '_hindi.mp3'
 
 def playWord(filename):
-    cmdToRun = 'nvlc  %s  --play-and-exit --no-osd' % (filename)
-    print(filename)
+    cmdToRun = 'cvlc  %s  --play-and-exit --no-osd > /dev/null 2>&1' % (filename)
     if os.path.isfile(filename):
-        print ("File exist")
+        #print ("File exist")
         os.system(cmdToRun)
     else:
         print ("word File not exist")
 
+def playAllTracks(filenames):
+    for i in filenames:
+        print(i)
+        playWord(i)
 
 from multiprocessing import Process, Value, Array
 import threading,time,os
 currProcess = None
 
-def startNonBlockingProcess(targetProcess,filename):
+def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
+    print('inside startNB')
     global currProcess
     if currProcess != None:
         currProcess.terminate() 
-        p = Process(target=targetProcess,filename)
-        currProcess = p
-        #p.daemon = True
-        p.start()
-        #p.join()
+    p = Process(target=targetProcess,args=(filenames,))
+    currProcess = p
+    #p.daemon = True
+    p.start()
+    #p.join()
 
 def date2audioFiles(bookDate):
     from datetime import datetime

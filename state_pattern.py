@@ -1,5 +1,6 @@
 import abc
 from dataAccess import findNextDates,isNumRegistered,storeBooking
+from dateToNum import playWord, getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -41,7 +42,12 @@ class State(object,metaclass = abc.ABCMeta):
 
     def speak(self):
         print(self.stateMessage)
-        map(playWord,self.audioList)
+        #print(self.audioList)
+        startNonBlockingProcess(self.audioList)
+        
+        #for audioTrack in self.audioList:
+         #   playWord(audioTrack)
+        #map(playWord,self.audioList)
         #playAudioList(self.audioList)
 
 class welcomeState(State):
@@ -63,15 +69,16 @@ class bookState(State):
         self.availDates = findNextDates(numOfDays=8)
         #print('Booking State\n 1-Today\n2-Tomorrow\n3-DayAfter')
         self.stateMessage = 'Booking State:\n'
+        self.audioList = []
         for x in range(0,len(self.availDates)):
             self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
-            self.audioList += self.createAudioList(str(x+1),self.availDates[x])
+            self.audioList = self.audioList + self.createAudioList(str(x+1), self.availDates[x])
         self.speak()
 
 
-    def createAudioList(keyNum,availDate):
-        return ['press.wav'] + num2audio(str(x+1)) + ['for.wav'] + date2audio(availDate)
-        #return date2audio(availDate) + ['keliye.wav'] + num2audio(str(x+1) + ['dabayein.wav']
+    def createAudioList(self,keyNum,availDate):
+        #return ['press.wav'] + [getFileFromNum(numToWords(int(keyNum)))] + ['for.wav'] + date2audioFiles(availDate)
+        return date2audioFiles(availDate) + ['keliye.wav'] + [getFileFromNum(numToWords(int(keyNum)))] + ['dabayein.wav']
         
     def checkKeyPress(self,numPressed):
         atm.state = confirmState(self.availDates[numPressed-1])
@@ -87,7 +94,7 @@ class bookState(State):
     def press5(self, atm):
         self.checkKeyPress(5)
     def press6(self, atm):
-        self.checkKeyPress(6):
+        self.checkKeyPress(6)
     def press7(self, atm):
         self.checkKeyPress(7)
     def press8(self, atm):
