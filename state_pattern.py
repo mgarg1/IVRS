@@ -1,6 +1,6 @@
 import abc
 from dataAccess import findNextDates,isNumRegistered,storeBooking
-from dateToNum import playWord, getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords
+from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords,key2file
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -45,16 +45,11 @@ class State(object,metaclass = abc.ABCMeta):
         #print(self.audioList)
         startNonBlockingProcess(self.audioList)
         
-        #for audioTrack in self.audioList:
-         #   playWord(audioTrack)
-        #map(playWord,self.audioList)
-        #playAudioList(self.audioList)
-
 class welcomeState(State):
     def __init__(self):
         self.stateMessage = 'welcome to IVRS: \n1-To Book\n2-To Talk\n'
         # print('welcome to IVRS: \n1-To Book\n2-To Talk\n')
-        self.audioList = ['welcomeStateMsg.wav']
+        self.audioList = key2file('welcomeState1')
         self.speak()
 
     def press1(self, atm):
@@ -78,7 +73,7 @@ class bookState(State):
 
     def createAudioList(self,keyNum,availDate):
         #return ['press.wav'] + [getFileFromNum(numToWords(int(keyNum)))] + ['for.wav'] + date2audioFiles(availDate)
-        return date2audioFiles(availDate) + ['keliye.wav'] + [getFileFromNum(numToWords(int(keyNum)))] + ['dabayein.wav']
+        return date2audioFiles(availDate) + [key2file('keliye')] + [getFileFromNum(numToWords(int(keyNum)))] + [key2file('dabayein')]
         
     def checkKeyPress(self,numPressed):
         atm.state = confirmState(self.availDates[numPressed-1])
@@ -110,7 +105,7 @@ class confirmState(State):
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
         '''
-        self.audioList = ['confirmStateSelMsg.wav'] + date2audioFiles(bookDate) + ['confirmStateConMsg.wav'] 
+        self.audioList = [key2file('confirmState1')] + date2audioFiles(bookDate) + [key2file('confirmState2')] 
         self.speak()
 
     def press1(self, atm):
@@ -125,7 +120,7 @@ class confirmState(State):
 class alreadyState(State):
     def __init__(self):
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
-        self.audioList = ['alreadyStateMsg.wav']
+        self.audioList = [key2file('alreadyState1')]
         self.speak()
 
     def press1(self,atm):

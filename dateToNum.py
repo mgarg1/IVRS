@@ -40,6 +40,18 @@ def numToWords(num,join=True):
 # print numToWords(0)
 # print numToWords(1001000025)
 
+fileKeyMapping = {'welcomeState1':'welcomeStateMsg.wav',
+	'keliye':'keliye.wav',
+	'dabayein':'dabayein.wav'
+	'confirmState1':'confirmStateSelMsg.wav',
+	'confirmState2':'confirmStateConMsg.wav',
+	'alreadyState1':'alreadyStateMsg.wav'
+}
+
+
+def key2file(key):
+    return './hindiaudio/' + fileKeyMapping[key]
+       
 import os
 
 def getFileFromNum(wordToConvert):
