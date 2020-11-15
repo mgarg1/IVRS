@@ -109,6 +109,6 @@ audioObj.save('keliye.mp4')
 audioObj = gTTS(text='आपका अपॉइंटमेंट पहले से ही बुक है दिनांक', lang='hi', slow=False) 
 audioObj.save('alreadyState1.mp4')
 
-audioObj = gTTS(text='के लिए  ,  इसे  बदलने के लिए, एक दबाएं , इस कॉल को यही बंद करने के लिए, दो दबाएं', lang='hi', slow=False) 
+audioObj = gTTS(text='के लिए . इसे बदलने के लिए, एक दबाएं , इसे कैंसिल करने के लिए, दो दबाएं', lang='hi', slow=False) 
 audioObj.save('alreadyState2.mp4')
  
