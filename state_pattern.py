@@ -1,6 +1,6 @@
 import abc
 from dataAccess import findNextDates,isNumRegistered,storeBooking
-from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords,key2file
+from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords,key2file,key2fileWithoutMap
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -49,7 +49,7 @@ class welcomeState(State):
     def __init__(self):
         self.stateMessage = 'welcome to IVRS: \n1-To Book\n2-To Talk\n'
         # print('welcome to IVRS: \n1-To Book\n2-To Talk\n')
-        self.audioList = key2file('welcomeState1')
+        self.audioList = [key2file('welcomeState1')]
         self.speak()
 
     def press1(self, atm):
@@ -66,15 +66,17 @@ class bookState(State):
         self.stateMessage = 'Booking State:\n'
         self.audioList = []
         for x in range(0,len(self.availDates)):
-            self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
+            self.stateMessage += f'Press ' + str(x+1) + ' for ' + self.availDates[x] + '\n'
             self.audioList = self.audioList + self.createAudioList(str(x+1), self.availDates[x])
         self.speak()
 
 
     def createAudioList(self,keyNum,availDate):
         #return ['press.wav'] + [getFileFromNum(numToWords(int(keyNum)))] + ['for.wav'] + date2audioFiles(availDate)
-        return date2audioFiles(availDate) + [key2file('keliye')] + [getFileFromNum(numToWords(int(keyNum)))] + [key2file('dabayein')]
-        
+        # return date2audioFiles(availDate) + [key2file('keliye')] + [getFileFromNum(numToWords(int(keyNum)))] + [key2file('dabayein')]
+        #TODO: have better function than key2fileWithoutMap
+        return date2audioFiles(availDate) + [key2file('keliye')] + [key2fileWithoutMap(keyNum + '_dabayein.mp4')]
+
     def checkKeyPress(self,numPressed):
         atm.state = confirmState(self.availDates[numPressed-1])
     
@@ -112,15 +114,16 @@ class confirmState(State):
         print('Booked')
         # Save to DB, SMS to user
         storeBooking(atm.phoneNum, self.bookDate)
+        # TODO:: tell the day also e.g- wednesday
         exit()
 
     def press2(self, atm):
         atm.state = bookState()
 
 class alreadyState(State):
-    def __init__(self):
+    def __init__(self,bookDate):
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
-        self.audioList = [key2file('alreadyState1')]
+        self.audioList = [key2file('alreadyState1')] + date2audioFiles(bookDate) + [key2file('alreadyState2')]
         self.speak()
 
     def press1(self,atm):
@@ -135,10 +138,11 @@ class alreadyState(State):
 class ATM:
     def __init__(self,phoneNum='9876543210'):
         self.phoneNum = phoneNum
-        if isNumRegistered(phoneNum):
-            self.state = alreadyState()
-        else:
+        bookDate = isNumRegistered(phoneNum)
+        if bookDate == False:
             self.state = welcomeState()
+        else:
+            self.state = alreadyState(bookDate)
 
     def press(self,selNum):
         funName = 'self.state.press' + str(selNum) + '(self)'

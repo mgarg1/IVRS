@@ -6,7 +6,11 @@ phoneDB = TinyDB('phoneDB.json')
 BOOK_LIMIT = 2
 
 def isNumRegistered(phoneNum):
-    return len(phoneDB.search(where('phoneNum') == phoneNum)) > 0
+    records = phoneDB.search(where('phoneNum') == phoneNum)
+    if len(records) > 0:
+        return records[0]['bookDate']
+    else:
+        return False
 
 def findNextDates(numOfDays=5,today=datetime.now()):
     days = []
