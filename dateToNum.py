@@ -42,7 +42,7 @@ def numToWords(num,join=True):
 
 fileKeyMapping = {'welcomeState1':'welcomeStateMsg.wav',
 	'keliye':'keliye.wav',
-	'dabayein':'dabayein.wav'
+	'dabayein':'dabayein.wav',
 	'confirmState1':'confirmStateSelMsg.wav',
 	'confirmState2':'confirmStateConMsg.wav',
 	'alreadyState1':'alreadyStateMsg.wav'
