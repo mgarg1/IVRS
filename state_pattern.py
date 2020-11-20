@@ -1,6 +1,6 @@
 import abc
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
-from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords,key2file,key2fileWithoutMap
+from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -123,18 +123,17 @@ class confirmState(State):
         atm.state = bookState()
 
 class alreadyState(State):
-    def __init__(self,bookDate,phoneNum):
+    def __init__(self,bookDate):
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
         self.existingBookingDate = bookDate
         self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate) + [key2file('alreadyState2')]
-        self.phoneNum = phoneNum
         self.speak()
 
     def press1(self,atm):
         atm.state = bookState()
 
     def press2(self,atm):
-        cancelBooking(self.phoneNum)
+        cancelBooking(atm.phoneNum)
         self.audioList = [key2file('cancelled')]
         self.speak()
         print('cancelled')
@@ -150,7 +149,7 @@ class ATM:
         if bookDate == False:
             self.state = welcomeState()
         else:
-            self.state = alreadyState(bookDate,self.phoneNum)
+            self.state = alreadyState(bookDate)
 
     def press(self,selNum):
         funName = 'self.state.press' + str(selNum) + '(self)'
