@@ -106,9 +106,18 @@ audioObj.save('keliye.mp4')
 # audioObj = gTTS(text='कन्फर्म करने के लिए एक दबाएं . फिरसे चुनाव करने के लिए दो दबाएं', lang='hi', slow=False) 
 # audioObj.save('confirmState2.mp4')
 
-audioObj = gTTS(text='आपका अपॉइंटमेंट पहले से ही बुक है दिनांक', lang='hi', slow=False) 
-audioObj.save('alreadyState1.mp4')
+# audioObj = gTTS(text='आपका अपॉइंटमेंट, पहले से ही बुक है दिनांक', lang='hi', slow=False) 
+# audioObj.save('alreadyState1.mp4')
 
-audioObj = gTTS(text='के लिए . इसे बदलने के लिए, एक दबाएं , इसे कैंसिल करने के लिए, दो दबाएं', lang='hi', slow=False) 
-audioObj.save('alreadyState2.mp4')
+# audioObj = gTTS(text='के लिए . इसे बदलने के लिए, एक दबाएं , इसे कैंसिल करने के लिए, दो दबाएं', lang='hi', slow=False) 
+# audioObj.save('alreadyState2.mp4')
+
+# audioObj = gTTS(text='आपका अपॉइंटमेंट बुक हो चुका है . हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
+# audioObj.save('booked.mp4')
+
+# audioObj = gTTS(text='हमें कॉल करने के लिए धन्यवाद ... हमारे प्रतिनिधि जल्द ही आपको कॉलबैक करेंगे', lang='hi', slow=False) 
+# audioObj.save('callback.mp4')
+
+audioObj = gTTS(text='आपका अपॉइंटमेंट कैंसिल हो चुका है ... हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
+audioObj.save('cancelled.mp4')
  

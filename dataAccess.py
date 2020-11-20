@@ -32,6 +32,8 @@ def totalBookOnDate(bookDate):
 def storeBooking(phoneNum,bookDate):
     phoneDB.insert({'phoneNum': phoneNum, 'bookDate': bookDate})
 
+def cancelBooking(phoneNum):
+    phoneDB.remove(where('phoneNum') == phoneNum)
 
 def removeStaleBooking(staleDate):
     phoneData = Query()

@@ -1,5 +1,5 @@
 import abc
-from dataAccess import findNextDates,isNumRegistered,storeBooking
+from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
 from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,numToWords,key2file,key2fileWithoutMap
 
 class State(object,metaclass = abc.ABCMeta):
@@ -111,25 +111,33 @@ class confirmState(State):
         self.speak()
 
     def press1(self, atm):
-        print('Booked')
         # Save to DB, SMS to user
         storeBooking(atm.phoneNum, self.bookDate)
         # TODO:: tell the day also e.g- wednesday
+        self.audioList = [key2file('booked')]
+        self.speak()
+        print('Booked')
         exit()
 
     def press2(self, atm):
         atm.state = bookState()
 
 class alreadyState(State):
-    def __init__(self,bookDate):
+    def __init__(self,bookDate,phoneNum):
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
-        self.audioList = [key2file('alreadyState1')] + date2audioFiles(bookDate) + [key2file('alreadyState2')]
+        self.existingBookingDate = bookDate
+        self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate) + [key2file('alreadyState2')]
+        self.phoneNum = phoneNum
         self.speak()
 
     def press1(self,atm):
         atm.state = bookState()
 
     def press2(self,atm):
+        cancelBooking(self.phoneNum)
+        self.audioList = [key2file('cancelled')]
+        self.speak()
+        print('cancelled')
         exit()
 
     def press9(self,atm):
@@ -142,7 +150,7 @@ class ATM:
         if bookDate == False:
             self.state = welcomeState()
         else:
-            self.state = alreadyState(bookDate)
+            self.state = alreadyState(bookDate,self.phoneNum)
 
     def press(self,selNum):
         funName = 'self.state.press' + str(selNum) + '(self)'
