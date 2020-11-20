@@ -22,11 +22,15 @@ def key2file(key):
 def key2fileWithoutMap(key):
     return os.path.join('hindiaudio',key) 
 
-def getFileFromNum(wordToConvert):
-    dirname = './hindinumbers/'
-    return dirname + wordToConvert + '_hindi.mp3'
+# def getFileFromNum(wordToConvert):
+#     dirname = './hindinumbers/'
+#     return dirname + wordToConvert + '_hindi.mp3'
 
 def playAllTracks(filenames):
+    if not isinstance(filenames, list):
+       print('filenames should be a list returning')
+       return
+
     for filename in filenames:
         if os.path.isfile(filename):
             print ("File exist")

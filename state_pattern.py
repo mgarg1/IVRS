@@ -1,6 +1,7 @@
 import abc
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
-from dateToNum import getFileFromNum, date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
+from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
+from phoneCmds import registerCallback
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -30,7 +31,7 @@ class State(object,metaclass = abc.ABCMeta):
         self.wrongInput(atm)
  
     def press9(self, atm):
-        self.wrongInput(atm)
+        atm.state = talkState()
 
     def press0(self, atm):
         self.wrongInput(atm)
@@ -58,6 +59,22 @@ class welcomeState(State):
     def press2(self, atm):
         atm.state = talkState()
     
+    def press9(self, atm):
+        atm.state = talkState()
+
+class talkState(State):
+    def __init__(self):
+        self.stateMessage = 'Your callback is registered. You will get a callback soon'
+        registerCallback(atm.phoneNum)
+        self.audioList = [key2file('callback')]
+        self.speak()
+        exit()
+    
+    def press1(self, atm):
+        pass
+    
+    def press2(self, atm):
+        pass
 
 class bookState(State):
     def __init__(self):
@@ -97,9 +114,8 @@ class bookState(State):
     def press8(self, atm):
         self.checkKeyPress(8)
 
-    def press9(self, atm):
-        #self.checkKeyPress(9)
-        pass
+    def press9(self,atm):
+        atm.state = talkState()
 
 class confirmState(State):
     def __init__(self,bookDate):
@@ -121,6 +137,9 @@ class confirmState(State):
 
     def press2(self, atm):
         atm.state = bookState()
+
+    def press9(self,atm):
+        atm.state = talkState()
 
 class alreadyState(State):
     def __init__(self,bookDate):
