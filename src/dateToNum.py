@@ -3,6 +3,9 @@ from sys import platform
 from multiprocessing import Process, Value, Array
 import threading,time,os,signal
 
+rootPath = os.path.join(os.getcwd(),'..')
+audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
+
 fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
     'keliye':'keliye.mp4',
     'dabayein':'dabayein.wav',
@@ -16,11 +19,11 @@ fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
 }
 
 def key2file(key):
-    return os.path.join('hindiaudio',fileKeyMapping[key]) 
+    return os.path.join(audioRecordingsPath,'hindiaudio',fileKeyMapping[key]) 
     # return './hindiaudio/' + fileKeyMapping[key]
 
 def key2fileWithoutMap(key):
-    return os.path.join('hindiaudio',key) 
+    return os.path.join(audioRecordingsPath,'hindiaudio',key) 
 
 # def getFileFromNum(wordToConvert):
 #     dirname = './hindinumbers/'
@@ -82,7 +85,7 @@ def date2audioFiles(bookDate):
     datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
     
     filename = datetime_obj.strftime('%d_%m_%Y') + '.mp4'
-    filename = os.path.join('hindidates',filename)
+    filename = os.path.join(audioRecordingsPath,'hindidates',filename)
     
     dateFileList = [filename]
     return dateFileList
