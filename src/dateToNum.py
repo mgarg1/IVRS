@@ -5,6 +5,7 @@ import threading,time,os,signal
 
 rootPath = os.path.join(os.getcwd(),'..')
 audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
+audioRecordingshindiNumbersPath = os.path.join(audioRecordingsPath,'hindidates')
 
 fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
     'keliye':'keliye.mp4',
@@ -85,7 +86,7 @@ def date2audioFiles(bookDate):
     datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
     
     filename = datetime_obj.strftime('%d_%m_%Y') + '.mp4'
-    filename = os.path.join(audioRecordingsPath,'hindidates',filename)
+    filename = os.path.join(audioRecordingshindiNumbersPath,filename)
     
     dateFileList = [filename]
     return dateFileList
