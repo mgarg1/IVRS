@@ -1,7 +1,31 @@
-import abc
+import abc,os,signal
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
 from phoneCmds import registerCallback
+
+# import asyncio
+from threading import Timer
+
+# class Timer:
+    # def __init__(self, timeout, callback):
+    #     self._timeout = timeout
+    #     self._callback = callback
+    #     self._task = asyncio.ensure_future(self._job())
+
+    # async def _job(self):
+    #     await asyncio.sleep(self._timeout)
+    #     await self._callback()
+
+    # def cancel(self):
+    #     self._task.cancel()
+
+# async def timeout_callback():
+#     await asyncio.sleep(0.1)
+#     print('echo! - timeout_callback called')
+
+# def timeout_callback():
+#     print('echo! - timeout_callback called')
+
 
 class State(object,metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -48,6 +72,7 @@ class State(object,metaclass = abc.ABCMeta):
         
 class welcomeState(State):
     def __init__(self):
+        self.idleTime = 12.0
         self.stateMessage = 'welcome to IVRS: \n1-To Book\n2-To Talk\n'
         # print('welcome to IVRS: \n1-To Book\n2-To Talk\n')
         self.audioList = [key2file('welcomeState1')]
@@ -64,6 +89,7 @@ class welcomeState(State):
 
 class talkState(State):
     def __init__(self):
+        self.idleTime = 12.0
         self.stateMessage = 'Your callback is registered. You will get a callback soon'
         registerCallback(atm.phoneNum)
         self.audioList = [key2file('callback')]
@@ -78,6 +104,7 @@ class talkState(State):
 
 class bookState(State):
     def __init__(self):
+        self.idleTime = 50.0
         self.availDates = findNextDates(numOfDays=8)
         #print('Booking State\n 1-Today\n2-Tomorrow\n3-DayAfter')
         self.stateMessage = 'Booking State:\n'
@@ -94,31 +121,32 @@ class bookState(State):
         #TODO: have better function than key2fileWithoutMap
         return date2audioFiles(availDate) + [key2file('keliye')] + [key2fileWithoutMap(keyNum + '_dabayein.mp4')]
 
-    def checkKeyPress(self,numPressed):
+    def checkKeyPress(self,numPressed,atm):
         atm.state = confirmState(self.availDates[numPressed-1])
     
     def press1(self, atm):
-        self.checkKeyPress(1)
+        self.checkKeyPress(1,atm)
     def press2(self, atm):
-        self.checkKeyPress(2)
+        self.checkKeyPress(2,atm)
     def press3(self, atm):
-        self.checkKeyPress(3)
+        self.checkKeyPress(3,atm)
     def press4(self, atm):
-        self.checkKeyPress(4)
+        self.checkKeyPress(4,atm)
     def press5(self, atm):
-        self.checkKeyPress(5)
+        self.checkKeyPress(5,atm)
     def press6(self, atm):
-        self.checkKeyPress(6)
+        self.checkKeyPress(6,atm)
     def press7(self, atm):
-        self.checkKeyPress(7)
+        self.checkKeyPress(7,atm)
     def press8(self, atm):
-        self.checkKeyPress(8)
+        self.checkKeyPress(8,atm)
 
     def press9(self,atm):
         atm.state = talkState()
 
 class confirmState(State):
     def __init__(self,bookDate):
+        self.idleTime = 15.0
         self.bookDate = bookDate
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
@@ -143,6 +171,7 @@ class confirmState(State):
 
 class alreadyState(State):
     def __init__(self,bookDate):
+        self.idleTime = 20.0
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
         self.existingBookingDate = bookDate
         self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate) + [key2file('alreadyState2')]
@@ -174,9 +203,42 @@ class ATM:
         funName = 'self.state.press' + str(selNum) + '(self)'
         result = eval(funName)
 
-if __name__ == "__main__":
-   atm = ATM()
-   while(1):
-       inRes = input()
-       funName = atm.press(int(inRes))
 
+# async def main2():
+#    atm = ATM()
+#    while(1):
+#        timer = Timer(2, timeout_callback)
+#        inRes = input()
+#        funName = atm.press(int(inRes))
+
+# if __name__ == '__main__':
+#     asyncio.run(main2())
+
+def remindToPress(atmObj):
+    startNonBlockingProcess([key2file('retry')])
+    timer3 = Timer(5.0, atmObj.state.speak)
+    timer3.start()
+
+def noResponseExit():
+    startNonBlockingProcess([key2file('retry')])
+    os.kill(os.getpid(), signal.SIGTERM)
+
+def main3():
+    atm = ATM()
+    while(1):
+        idleTime = atm.state.idleTime
+
+        timer1 = Timer(idleTime + 10.0, remindToPress,[atm])
+        timer1.start()
+
+        timer2 = Timer(idleTime + 40.0, noResponseExit)
+        timer2.start()
+
+        inRes = input()
+        timer1.cancel()
+        timer2.cancel()
+        
+        funName = atm.press(int(inRes))
+
+if __name__ == '__main__':
+    main3()

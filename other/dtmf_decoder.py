@@ -14,7 +14,7 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(OUTBITS, GPIO.IN)
 
 def my_callback(arg1):
-	print int(str(GPIO.input(Q4))+str(GPIO.input(Q3))+str(GPIO.input(Q2))+str(GPIO.input(Q1)),2)
+	print(int(str(GPIO.input(Q4))+str(GPIO.input(Q3))+str(GPIO.input(Q2))+str(GPIO.input(Q1)),2))
 
 # GPIO.output(25, GPIO.input(4))
 # int('11111111', 2)

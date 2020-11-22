@@ -40,8 +40,8 @@ def generateAudioForNextDays(startDate,days):
         generateHindiAudioFromDate(newDate)
 
 def generateOtherAudioFiles():
-    audioObj = gTTS(text='के लिए', lang='hi', slow=False)
-    audioObj.save(key2file('keliye'))
+    # audioObj = gTTS(text='के लिए', lang='hi', slow=False)
+    # audioObj.save(key2file('keliye'))
 
     # count_map = ['०','१','२','३','४','५','६','७','८','९']
     # for i in range(0,10):
@@ -69,9 +69,11 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='हमें कॉल करने के लिए धन्यवाद ... हमारे प्रतिनिधि जल्द ही आपको कॉलबैक करेंगे', lang='hi', slow=False) 
     # audioObj.save(key2file('callback'))
 
-    audioObj = gTTS(text='आपका अपॉइंटमेंट कैंसिल हो चुका है . हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
-    audioObj.save(key2file('cancelled'))
+    # audioObj = gTTS(text='आपका अपॉइंटमेंट कैंसिल हो चुका है . हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
+    # audioObj.save(key2file('cancelled'))
      
+    audioObj = gTTS(text='आपने कोई विकल्प नहीं चुना है ... कृपया पुनः प्रयास करें', lang='hi')
+    audioObj.save(key2file('retry'))
 
 def main():
     # generateAudioForNextDays(datetime.datetime.now(),31)

@@ -16,7 +16,8 @@ fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
     'alreadyState2':'alreadyState2.mp4',
     'booked':'booked.mp4',
     'callback':'callback.mp4',
-    'cancelled':'cancelled.mp4'
+    'cancelled':'cancelled.mp4',
+    'retry':'retry.mp4'
 }
 
 def key2file(key):
