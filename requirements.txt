@@ -6,3 +6,4 @@ MarkupSafe
 tinydb
 Werkzeug
 gTTS
+RPi.GPIO

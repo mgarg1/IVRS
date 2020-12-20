@@ -223,7 +223,17 @@ def noResponseExit():
     startNonBlockingProcess([key2file('retry')])
     os.kill(os.getpid(), signal.SIGTERM)
 
+import sys
+
 def main3():
+    
+    if not len(sys.argv) == 1:
+        print('invalid argument list')
+    
+
+    phoneNum=str(sys.argv)
+    print()
+
     atm = ATM()
     while(1):
         idleTime = atm.state.idleTime
