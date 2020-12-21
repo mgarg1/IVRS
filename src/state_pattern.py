@@ -229,12 +229,12 @@ def main3():
     
     if not len(sys.argv) == 1:
         print('invalid argument list')
-    
+        return;
 
     phoneNum=str(sys.argv)
-    print()
+    print('phone num recvd -> ' + phoneNum)
 
-    atm = ATM()
+    atm = ATM(phoneNum)
     while(1):
         idleTime = atm.state.idleTime
 
