@@ -2,6 +2,8 @@ import os
 from sys import platform
 from multiprocessing import Process, Value, Array
 import threading,time,os,signal
+import psutil
+
 
 rootPath = os.path.join(os.getcwd(),'..')
 audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
@@ -31,41 +33,68 @@ def key2fileWithoutMap(key):
 #     dirname = './hindinumbers/'
 #     return dirname + wordToConvert + '_hindi.mp3'
 
-def playAllTracks(filenames):
+def getExternalCmd(filenames):
     if not isinstance(filenames, list):
        print('filenames should be a list returning')
        return
 
     for filename in filenames:
-        if os.path.isfile(filename):
-            print ("File exist")
-        else:
-            print ("word File not exist")
+        if not os.path.isfile(filename):
+            print ("word File not exist - " + filename)
             return
 
     if platform == "linux" or platform == "linux2":
         filenames = ' '.join(filenames)
-        cmdToRun = 'vlc  %s  --play-and-exit --no-osd > /dev/null 2>&1' % (filenames)
+        cmdToRun = 'nvlc  %s --play-and-exit --no-osd > /dev/null 2>&1' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
         cmdToRun = 'C:\\Program^ Files^ ^(x86)\\VideoLAN\\VLC\\vlc.exe %s --play-and-exit --no-osd' % (filenames)
         print(cmdToRun)
+    return cmdToRun
+
+def playAllTracks(cmdToRun):
     os.system(cmdToRun)
+
+def killtree(pid, including_parent=True):
+    parent = psutil.Process(pid)
+    for child in parent.children(recursive=True):
+        print ("child", child)
+        child.kill()
+
+    if including_parent:
+        parent.kill()
+
+## get the pid of this program
+#pid=os.getpid()
+
+## when you want to kill everything, including this program
+#killtree(pid)
+
 
 currProcess = None
 def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
-    print('inside startNB')
+    #print('inside startNB')
     global currProcess
     if currProcess != None:
-        print('terminating')
-        currProcess.kill()
-        # os.kill(currProcess.pid,signal.SIGTERM)
-        # currProcess.terminate() 
-    p = Process(target=targetProcess,args=(filenames,))
-    currProcess = p
+        print('terminating - ' + str(currProcess))
+        #currProcess.kill()
+        if currProcess.is_alive():
+            print('terminating - ' + str(currProcess.pid))
+            killtree(currProcess.pid)
+            #currProcess.join()
+            #os.kill(currProcess.pid,signal.SIGTERM)
+            #currProcess.terminate()
+            #currProcess.kill()
+    else:
+        print('invalid currProcess ' + str(currProcess))
+    
+    externalCmd =  getExternalCmd(filenames)
+    p = Process(target=targetProcess,args=(externalCmd,))
     #p.daemon = True
     p.start()
+    currProcess = p
+    print('process in run:' + str(currProcess.pid))
     # p.join()
 
 # def date2audioFiles_old(bookDate):

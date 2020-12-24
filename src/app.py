@@ -26,19 +26,22 @@ def show_post(phoneNum):
         #print('phone Num correct1' + phoneNum)
         print('phone Num correct2' + phoneNum2)
 
-    p1 = Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p1.communicate()
+    p1 = Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=PIPE, stdout=PIPE, text=True)
+    #stdout1, stderr1 = p1.communicate()
+    #print(str(stdout1.decode()))
 
-    # get output from process "Something to print"
-    one_line_output = p.stdout.readline()
-    while one_line_output:
-        print(one_line_output)
-        one_line_output = p.stdout.readline()
+    while True:
+        line = p1.stdout.readline()
+        #line = line.decode(encoding='utf-8')
+        if not line:
+            print('invalid/blank line')
+            continue
+        elif line.find('exitState') != -1: 
+            print('pinned line - ' + line)
+            return line
 
-
-    if stderr:
-        raise Exception("Error "+str(stderr))
-    #return stdout.decode('utf-8')
+        print("test:", line.rstrip())
+   
     return 'hello'
 
 

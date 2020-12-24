@@ -76,8 +76,8 @@ def generateOtherAudioFiles():
     audioObj.save(key2file('retry'))
 
 def main():
-    # generateAudioForNextDays(datetime.datetime.now(),31)
-    generateOtherAudioFiles()
+    generateAudioForNextDays(datetime.datetime.now(),31)
+    #generateOtherAudioFiles()
 
 
 main()

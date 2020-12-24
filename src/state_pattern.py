@@ -2,6 +2,7 @@ import abc,os,signal
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
 from phoneCmds import registerCallback
+import re
 
 # import asyncio
 from threading import Timer
@@ -82,19 +83,20 @@ class welcomeState(State):
         atm.state  = bookState()
 
     def press2(self, atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
     
     def press9(self, atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
 
 class talkState(State):
-    def __init__(self):
+    def __init__(self,phoneNum):
         self.idleTime = 12.0
         self.stateMessage = 'Your callback is registered. You will get a callback soon'
-        registerCallback(atm.phoneNum)
+        registerCallback(phoneNum)
         self.audioList = [key2file('callback')]
         self.speak()
-        exit()
+        resMsg='Callback registered,' + phoneNum
+        atm.state = exitState(resMsg)
     
     def press1(self, atm):
         pass
@@ -144,6 +146,17 @@ class bookState(State):
     def press9(self,atm):
         atm.state = talkState()
 
+class exitState(State):
+    def __init__(self,resMsg):
+        print('exitState:' + resMsg, flush=True)
+        # can write to someplace
+        exit(0)
+    def press1(self, atm):
+        pass
+    def press2(self, atm):
+        pass
+
+
 class confirmState(State):
     def __init__(self,bookDate):
         self.idleTime = 15.0
@@ -160,8 +173,8 @@ class confirmState(State):
         # TODO:: tell the day also e.g- wednesday
         self.audioList = [key2file('booked')]
         self.speak()
-        print('Booked')
-        exit()
+        resStr = 'Booking Confirmed,' + atm.phoneNum + ',' + self.bookDate
+        atm.state = exitState(resStr)
 
     def press2(self, atm):
         atm.state = bookState()
@@ -184,14 +197,18 @@ class alreadyState(State):
         cancelBooking(atm.phoneNum)
         self.audioList = [key2file('cancelled')]
         self.speak()
-        print('cancelled')
-        exit()
+        resStr='Booking Cancelled,' + atm.phoneNum + ',' + self.existingBookingDate
+        atm.state = exitState(resStr)
 
     def press9(self,atm):
         atm.state = talkState()
 
 class ATM:
     def __init__(self,phoneNum='9876543210'):
+        
+        if not re.search("^\d{10}$", phoneNum):
+            raise Exception('not a 10 digit number - ' + phoneNum)
+        
         self.phoneNum = phoneNum
         bookDate = isNumRegistered(phoneNum)
         if bookDate == False:
@@ -200,6 +217,14 @@ class ATM:
             self.state = alreadyState(bookDate)
 
     def press(self,selNum):
+        print('recvd ' + selNum)
+        if not isinstance(selNum,str):
+            print('invalid Number - Not a string')
+        if len(selNum) != 1:
+            print('invalid selection - should be single char')
+        if not selNum in '0123456789#*':
+            print('invalid selection - Not a allowed char')
+
         funName = 'self.state.press' + str(selNum) + '(self)'
         result = eval(funName)
 
@@ -225,17 +250,24 @@ def noResponseExit():
 
 import sys
 
+FIFO='myfifo1'
+
+
 def main3():
     
-    if not len(sys.argv) == 1:
+    if len(sys.argv) != 2:
         print('invalid argument list')
         return;
 
-    phoneNum=str(sys.argv)
+    phoneNum=str(sys.argv[1])
     print('phone num recvd -> ' + phoneNum)
-
+    
+    #with open(FIFO,'rt') as fifo:
+     #   fifo.flush()
+         
     atm = ATM(phoneNum)
-    while(1):
+    
+    while True:
         idleTime = atm.state.idleTime
 
         timer1 = Timer(idleTime + 10.0, remindToPress,[atm])
@@ -244,11 +276,20 @@ def main3():
         timer2 = Timer(idleTime + 40.0, noResponseExit)
         timer2.start()
 
-        inRes = input()
+        with open(FIFO,'rt') as fifo:
+            fifo.flush()
+
+        with open(FIFO,'rt') as fifo:
+            #inRes = getInput()
+            inRes = fifo.read()
+            if len(inRes) == 0:
+                print('invalid data')
+                continue
+
         timer1.cancel()
         timer2.cancel()
-        
-        funName = atm.press(int(inRes))
+        inRes = inRes.strip() 
+        funName = atm.press(inRes)
 
 if __name__ == '__main__':
     main3()
