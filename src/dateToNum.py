@@ -52,8 +52,22 @@ def playAllTracks(cmdToRun):
     ret=os.system(cmdToRun)
     print(ret == os.EX_OK)
 
+
+currNonBlockingProcess=None
+def startNonBlockingProcess(filenames):
+    global currNonBlockingProcess
+
+    if currNonBlockingProcess:
+        killtree(currNonBlockingProcess)
+        currNonBlockingProcess = None
+
+    externalCmd = getExternalCmd(filenames)
+    p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.STDOUT, text=True)
+    currNonBlockingProcess = p1.pid
+
+
 currProcess = None
-def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
+def startNonBlockingProcess2(filenames,targetProcess=playAllTracks):
     #print('inside startNB')
     global currProcess
     if currProcess != None:
