@@ -16,3 +16,10 @@ flask - for a webserver to initiate the flow with caller ID, and respond with ht
 * https://stackoverflow.com/a/7027113/1496826
 * https://github.com/Drewsif/PiShrink
 * https://readthedocs.org/projects/gtts/downloads/pdf/latest/
+
+## TODO -BUGS
+[] Automate - keep checking if call is active 
+
+## TODO - Enhancement
+[] Implement Token number
+[] URI based holiday update

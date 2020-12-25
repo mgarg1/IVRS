@@ -2,7 +2,7 @@ import abc,os,signal
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
 from phoneCmds import registerCallback
-import re
+import re,sys
 
 # import asyncio
 from threading import Timer
@@ -95,7 +95,7 @@ class talkState(State):
         registerCallback(phoneNum)
         self.audioList = [key2file('callback')]
         self.speak()
-        resMsg='Callback registered,' + phoneNum
+        resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge'
         atm.state = exitState(resMsg)
     
     def press1(self, atm):
@@ -174,6 +174,7 @@ class confirmState(State):
         self.audioList = [key2file('booked')]
         self.speak()
         resStr = 'Booking Confirmed,' + atm.phoneNum + ',' + self.bookDate
+        resStr = 'Appointment confirm date - ' + self.bookDate + ' -Mayuri Hospital'
         atm.state = exitState(resStr)
 
     def press2(self, atm):
@@ -197,7 +198,7 @@ class alreadyState(State):
         cancelBooking(atm.phoneNum)
         self.audioList = [key2file('cancelled')]
         self.speak()
-        resStr='Booking Cancelled,' + atm.phoneNum + ',' + self.existingBookingDate
+        resStr='Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai - Mayuri Hospital'
         atm.state = exitState(resStr)
 
     def press9(self,atm):
@@ -217,13 +218,14 @@ class ATM:
             self.state = alreadyState(bookDate)
 
     def press(self,selNum):
-        print('recvd ' + selNum)
         if not isinstance(selNum,str):
             print('invalid Number - Not a string')
         if len(selNum) != 1:
             print('invalid selection - should be single char')
         if not selNum in '0123456789#*':
             print('invalid selection - Not a allowed char')
+
+        print('recvd ' + selNum)
 
         funName = 'self.state.press' + str(selNum) + '(self)'
         result = eval(funName)
@@ -252,9 +254,43 @@ import sys
 
 FIFO='myfifo1'
 
+import RPi.GPIO as GPIO
+
+Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
+INBITS = [Q1,Q2,Q3,Q4,SDT]
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(INBITS, GPIO.IN)
+
+timer1=None
+timer2=None
+
+def dtmf_call(channel,atmObj,t1,t2):
+    global timer1
+    global timer2
+    if timer1:
+        timer1.cancel()
+    if timer2:
+        timer2.cancel()
+        
+    binStr = str(GPIO.input(Q4))+str(GPIO.input(Q3))+str(GPIO.input(Q2))+str(GPIO.input(Q1))
+    decNum = int(binStr,2)
+    if decNum == 10:
+        decNum = 0
+        
+    atmObj.press(str(decNum))
+    idleTime = atmObj.state.idleTime
+    timer1 = Timer(idleTime + 10.0, remindToPress,[atmObj])
+    timer1.start()
+
+    timer2 = Timer(idleTime + 40.0, noResponseExit)
+    timer2.start()
+    
+    print(decNum)
 
 def main3():
-    
+    sys.stdout.flush()
+
     if len(sys.argv) != 2:
         print('invalid argument list')
         return;
@@ -262,34 +298,25 @@ def main3():
     phoneNum=str(sys.argv[1])
     print('phone num recvd -> ' + phoneNum)
     
-    #with open(FIFO,'rt') as fifo:
-     #   fifo.flush()
-         
     atm = ATM(phoneNum)
+    idleTime = atm.state.idleTime
+    global timer1
+    global timer2
     
+    timer1 = Timer(idleTime + 10.0, remindToPress,[atm])
+    timer1.start()
+
+    timer2 = Timer(idleTime + 40.0, noResponseExit)
+    timer2.start()
+
+    
+    callback_rt = lambda x:dtmf_call(x,atm,timer1,timer2)
+    GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
+    #GPIO.remove_event_detect(SDT)
+        
     while True:
-        idleTime = atm.state.idleTime
-
-        timer1 = Timer(idleTime + 10.0, remindToPress,[atm])
-        timer1.start()
-
-        timer2 = Timer(idleTime + 40.0, noResponseExit)
-        timer2.start()
-
-        with open(FIFO,'rt') as fifo:
-            fifo.flush()
-
-        with open(FIFO,'rt') as fifo:
-            #inRes = getInput()
-            inRes = fifo.read()
-            if len(inRes) == 0:
-                print('invalid data')
-                continue
-
-        timer1.cancel()
-        timer2.cancel()
-        inRes = inRes.strip() 
-        funName = atm.press(inRes)
+        pass
+        
 
 if __name__ == '__main__':
     main3()
