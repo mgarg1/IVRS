@@ -1,7 +1,7 @@
 import os
 from sys import platform
 from multiprocessing import Process, Value, Array
-import threading,time,os,signal
+import threading,time,os,signal,subprocess
 from ivrs_utils import killtree
 
 rootPath = os.path.join(os.getcwd(),'..')
@@ -40,7 +40,7 @@ def getExternalCmd(filenames):
 
     if platform == "linux" or platform == "linux2":
         filenames = ' '.join(filenames)
-        cmdToRun = 'nvlc  %s vol=125 --play-and-exit --no-osd > /dev/null 2>&1 ' % (filenames)
+        cmdToRun = '/usr/bin/vlc %s vol=125 --play-and-exit --no-osd' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -61,9 +61,10 @@ def startNonBlockingProcess(filenames):
         killtree(currNonBlockingProcess)
         currNonBlockingProcess = None
 
-    externalCmd = getExternalCmd(filenames)
-    p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.STDOUT, text=True)
+    externalCmd = getExternalCmd(filenames).split()
+    p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
     currNonBlockingProcess = p1.pid
+    print('runnig process')
 
 
 currProcess = None

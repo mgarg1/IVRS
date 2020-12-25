@@ -250,10 +250,6 @@ def noResponseExit():
     startNonBlockingProcess([key2file('retry')])
     os.kill(os.getpid(), signal.SIGTERM)
 
-import sys
-
-FIFO='myfifo1'
-
 import RPi.GPIO as GPIO
 
 Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
@@ -265,7 +261,8 @@ GPIO.setup(INBITS, GPIO.IN)
 timer1=None
 timer2=None
 
-def dtmf_call(channel,atmObj,t1,t2):
+def dtmf_call(channel,atmObj):
+    print('key pressed')
     global timer1
     global timer2
     if timer1:
@@ -310,7 +307,7 @@ def main3():
     timer2.start()
 
     
-    callback_rt = lambda x:dtmf_call(x,atm,timer1,timer2)
+    callback_rt = lambda x:dtmf_call(x,atm)
     GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
     #GPIO.remove_event_detect(SDT)
         
