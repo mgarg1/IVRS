@@ -40,7 +40,7 @@ def getExternalCmd(filenames):
 
     if platform == "linux" or platform == "linux2":
         filenames = ' '.join(filenames)
-        cmdToRun = 'vlc  %s vol=125 --play-and-exit --no-osd > /dev/null 2>&1 &' % (filenames)
+        cmdToRun = 'nvlc  %s vol=125 --play-and-exit --no-osd > /dev/null 2>&1 ' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -62,10 +62,6 @@ def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
         if currProcess.is_alive():
             print('terminating - ' + str(currProcess.pid))
             killtree(currProcess.pid)
-            #currProcess.join()
-            #os.kill(currProcess.pid,signal.SIGTERM)
-            #currProcess.terminate()
-            #currProcess.kill()
     else:
         print('invalid currProcess ' + str(currProcess))
     
@@ -76,4 +72,14 @@ def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
     currProcess = p
     print('process in run:' + str(currProcess.pid))
     # p.join()
+
+def date2audioFiles(bookDate):
+    from datetime import datetime
+    datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
+
+    filename = datetime_obj.strftime('%d_%m_%Y') + '.mp4'
+    filename = os.path.join(audioRecordingshindiNumbersPath,filename)
+
+    dateFileList = [filename]
+    return dateFileList
 

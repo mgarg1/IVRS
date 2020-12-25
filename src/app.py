@@ -1,6 +1,7 @@
 #!flask/bin/python
 from flask import Flask, jsonify
-from subprocess import Popen,PIPE
+import subprocess
+# from subprocess import Popen,PIPE
 import re
 from ivrs_utils import killtree
 
@@ -34,7 +35,7 @@ def show_post(phoneNum):
         #print('phone Num correct1' + phoneNum)
         print('phone Num correct2' + phoneNum2)
 
-    p1 = Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=PIPE, stdout=PIPE, text=True)
+    p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
     oldProcessId=p1.pid
     #stdout1, stderr1 = p1.communicate()
     #print(str(stdout1.decode()))
