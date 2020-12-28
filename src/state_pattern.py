@@ -150,7 +150,8 @@ class exitState(State):
     def __init__(self,resMsg):
         print('exitState:' + resMsg, flush=True)
         # can write to someplace
-        exit(0)
+        raise Exception('exitState:' + resMsg)
+        # exit(0)
     def press1(self, atm):
         pass
     def press2(self, atm):

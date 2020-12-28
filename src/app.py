@@ -4,6 +4,7 @@ import subprocess
 # from subprocess import Popen,PIPE
 import re
 from ivrs_utils import killtree
+from state_pattern import main3
 
 # Path to a Python interpreter that runs any Python script
 # under the virtualenv /path/to/virtualenv/
@@ -31,23 +32,32 @@ def show_post(phoneNum):
 
     print('PhoneNum - ' + phoneNum + ' & PhoneNum2 - ' + phoneNum2)
 
-    p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
-    oldProcessId=p1.pid
-    #stdout1, stderr1 = p1.communicate()
-    #print(str(stdout1.decode()))
-    p1.stdout.flush()
+    try:
+        main3()
+    except Exception as ExceptionStr:
+        if ExceptionStr.find('exitState'):
+            print('found')
+            return ExceptionStr.replace('exitState:',''),200
     
-    while p1.poll() == None:
-        line = p1.stdout.readline()
-        #line = line.decode(encoding='utf-8')
-        if not line:
-            print('invalid/blank line')
-            continue
-        elif line.find('exitState') != -1: 
-            print('pinned line - ' + line)
-            return line.replace('exitState:',''),200
+    # print('123' + ToDoc)
 
-        print("test:", line.rstrip())
+    # p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
+    # oldProcessId=p1.pid
+    # #stdout1, stderr1 = p1.communicate()
+    # #print(str(stdout1.decode()))
+    # p1.stdout.flush()
+    
+    # while p1.poll() == None:
+    #     line = p1.stdout.readline()
+    #     #line = line.decode(encoding='utf-8')
+    #     if not line:
+    #         print('invalid/blank line')
+    #         continue
+    #     elif line.find('exitState') != -1: 
+    #         print('pinned line - ' + line)
+    #         return line.replace('exitState:',''),200
+
+    # print("test:", line.rstrip())
 
     return 'Command Not known',501
 
