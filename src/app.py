@@ -29,11 +29,7 @@ def show_post(phoneNum):
     phoneNum2  = phoneNum[-10:] #last 10 digits
     allMatch  = re.findall("\d{10}", phoneNum2)
 
-    if allMatch:
-        print('recvd PhoneNum' + phoneNum)
-    else:
-        #print('phone Num correct1' + phoneNum)
-        print('phone Num correct2' + phoneNum2)
+    print('PhoneNum - ' + phoneNum + ' & PhoneNum2 - ' + phoneNum2)
 
     p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
     oldProcessId=p1.pid
@@ -49,11 +45,20 @@ def show_post(phoneNum):
             continue
         elif line.find('exitState') != -1: 
             print('pinned line - ' + line)
-            return line.replace('exitState:','')
+            return line.replace('exitState:',''),200
 
         print("test:", line.rstrip())
-   
-    return 'hello'
+
+    return 'Command Not known',501
+
+
+@app.route('/kilall', methods=['GET','POST'])
+def kill_all_process():
+    #kill all the running process
+    if oldProcessId:
+        killtree(oldProcessId)
+        oldProcessId = None
+    return 'Success',400
 
 
 @app.route('/', methods=['GET'])
