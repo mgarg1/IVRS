@@ -1,8 +1,9 @@
 import abc,os,signal
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
-from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap
+from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap,waitForJoin
 from phoneCmds import registerCallback
 import re,sys
+import RPi.GPIO as GPIO
 
 # import asyncio
 from threading import Timer
@@ -146,12 +147,21 @@ class bookState(State):
     def press9(self,atm):
         atm.state = talkState()
 
+def commonExit(msg):
+    print('inside Common Exit')
+    GPIO.cleanup()
+    waitForJoin()
+    # can write to someplace
+    raise SystemExit(msg)
+    #raise Exception('exitState:' + resMsg)
+    # exit(0)
+   
+
 class exitState(State):
     def __init__(self,resMsg):
         print('exitState:' + resMsg, flush=True)
-        # can write to someplace
-        raise Exception('exitState:' + resMsg)
-        # exit(0)
+        commonExit('exitState:' + resMsg)
+
     def press1(self, atm):
         pass
     def press2(self, atm):
@@ -248,12 +258,13 @@ def remindToPress(atmObj):
     timer3.start()
 
 def noResponseExit():
-    startNonBlockingProcess([key2file('retry')])
-    os.kill(os.getpid(), signal.SIGTERM)
+    startNonBlockingProcess([key2file('timeout')])
+    commonExit('no response exit')
+    #os.kill(os.getpid(), signal.SIGTERM)
 
-import RPi.GPIO as GPIO
 
-Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
+#Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
+Q1,Q2,Q3,Q4,SDT = 29,31,33,35,37
 INBITS = [Q1,Q2,Q3,Q4,SDT]
 
 GPIO.setmode(GPIO.BOARD)
@@ -286,16 +297,9 @@ def dtmf_call(channel,atmObj):
     
     print(decNum)
 
-def main3():
-    sys.stdout.flush()
+def main3(phoneNum):
+    #sys.stdout.flush()
 
-    if len(sys.argv) != 2:
-        print('invalid argument list')
-        return;
-
-    phoneNum=str(sys.argv[1])
-    print('phone num recvd -> ' + phoneNum)
-    
     atm = ATM(phoneNum)
     idleTime = atm.state.idleTime
     global timer1
@@ -313,8 +317,13 @@ def main3():
     #GPIO.remove_event_detect(SDT)
         
     while True:
-        pass
-        
+       pass
 
 if __name__ == '__main__':
-    main3()
+
+    if len(sys.argv) != 2:
+        print('invalid argument list')
+    else:
+        phoneNum=str(sys.argv[1])
+        print('phone num recvd -> ' + phoneNum)
+        main3(phoneNum)

@@ -41,7 +41,8 @@ def getExternalCmd(filenames):
 
     if platform == "linux" or platform == "linux2":
         filenames = ' '.join(filenames)
-        cmdToRun = '/usr/bin/vlc %s vol=125 --play-and-exit --no-osd' % (filenames)
+        #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
+        cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -50,12 +51,31 @@ def getExternalCmd(filenames):
     return cmdToRun
 
 def playAllTracks(cmdToRun):
-    ret=os.system(cmdToRun)
+    #TODO:try catch here
+    ret = subprocess.check_output(cmdToRun,shell=True)
+    #ret = os.system(cmdToRun)
+    
     print(ret == os.EX_OK)
 
 
 currNonBlockingProcess=None
-def startNonBlockingProcess(filenames):
+def startNonBlockingProcess4(filenames):
+    global currNonBlockingProcess
+
+    if currNonBlockingProcess:
+        killtree(currNonBlockingProcess)
+        currNonBlockingProcess = None
+
+    externalCmd = getExternalCmd(filenames) + ' & echo $!'
+    currNonBlockingProcess = subprocess.check_output(externalCmd,shell=True)
+    print('what call returned--')
+    print(str(currNonBlockingProcess))
+    #p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
+    #currNonBlockingProcess = p1.pid
+    print('runnig process')
+
+
+def startNonBlockingProcess3(filenames):
     global currNonBlockingProcess
 
     if currNonBlockingProcess:
@@ -69,12 +89,19 @@ def startNonBlockingProcess(filenames):
 
 
 currProcess = None
-def startNonBlockingProcess2(filenames,targetProcess=playAllTracks):
+def waitForJoin():
+    if currProcess:
+        currProcess.join()
+
+
+def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
     #print('inside startNB')
     global currProcess
     if currProcess != None:
         print('terminating - ' + str(currProcess))
         #currProcess.kill()
+        #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
+        subprocess.Popen(['vlc-ctrl',  'pause'])
         if currProcess.is_alive():
             print('terminating - ' + str(currProcess.pid))
             killtree(currProcess.pid)
@@ -88,6 +115,8 @@ def startNonBlockingProcess2(filenames,targetProcess=playAllTracks):
     currProcess = p
     print('process in run:' + str(currProcess.pid))
     # p.join()
+
+
 
 def date2audioFiles(bookDate):
     from datetime import datetime

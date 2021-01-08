@@ -33,12 +33,13 @@ def show_post(phoneNum):
     print('PhoneNum - ' + phoneNum + ' & PhoneNum2 - ' + phoneNum2)
 
     try:
-        main3()
+        main3(phoneNum2)
     except Exception as ExceptionStr:
-        if ExceptionStr.find('exitState'):
-            print('found')
-            return ExceptionStr.replace('exitState:',''),200
-    
+        print(ExceptionStr)
+        #if ExceptionStr.find('exitState'):
+        #    print('found')
+        #    return ExceptionStr.replace('exitState:',''),200
+    return 'Sucess',200
     # print('123' + ToDoc)
 
     # p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)

@@ -7,3 +7,5 @@ tinydb
 Werkzeug
 gTTS
 RPi.GPIO
+dbus-python
+vlc-ctrl
