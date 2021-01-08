@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from gtts import gTTS
 import os
 from dateToNum import key2file,key2fileWithoutMap,audioRecordingsPath,audioRecordingshindiNumbersPath
@@ -57,10 +58,10 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='कन्फर्म करने के लिए एक दबाएं . फिरसे चुनाव करने के लिए दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('confirmState2'))
 
-    # audioObj = gTTS(text='आपका अपॉइंटमेंट, पहले से ही बुक है दिनांक', lang='hi', slow=False) 
+    # audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . आपका अपॉइंटमेंट, पहले से ही बुक है दिनांक', lang='hi', slow=False) 
     # audioObj.save(key2file('alreadyState1'))
 
-    # audioObj = gTTS(text='के लिए . इसे बदलने के लिए, एक दबाएं , इसे कैंसिल करने के लिए, दो दबाएं', lang='hi', slow=False) 
+    # audioObj = gTTS(text='इसे बदलने के लिए, एक दबाएं , इसे कैंसिल करने के लिए, दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('alreadyState2'))
 
     # audioObj = gTTS(text='आपका अपॉइंटमेंट बुक हो चुका है . हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
@@ -72,8 +73,11 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='आपका अपॉइंटमेंट कैंसिल हो चुका है . हमें कॉल करने के लिए धन्यवाद', lang='hi', slow=False) 
     # audioObj.save(key2file('cancelled'))
      
-    audioObj = gTTS(text='आपने कोई विकल्प नहीं चुना है ... कृपया पुनः प्रयास करें', lang='hi')
-    audioObj.save(key2file('retry'))
+    # audioObj = gTTS(text='आपने कोई विकल्प नहीं चुना है ... कृपया पुनः प्रयास करें', lang='hi')
+    # audioObj.save(key2file('retry'))
+
+    # audioObj = gTTS(text='आपने कोई विकल्प नहीं चुना है ...हमें कॉल करने के लिए धन्यवाद', lang='hi')
+    # audioObj.save(key2file('timeout'))
 
 def main():
     generateAudioForNextDays(datetime.datetime.now(),31)
