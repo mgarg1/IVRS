@@ -19,7 +19,8 @@ fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
     'callback':'callback.mp4',
     'cancelled':'cancelled.mp4',
     'retry':'retry.mp4',
-    'timeout':'timeout.mp4'
+    'timeout':'timeout.mp4',
+    'bookInstr':'booking_instruction.mp4'
 }
 
 def key2file(key):
@@ -42,7 +43,7 @@ def getExternalCmd(filenames):
     if platform == "linux" or platform == "linux2":
         filenames = ' '.join(filenames)
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
-        cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd' % (filenames)
+        cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -57,52 +58,25 @@ def playAllTracks(cmdToRun):
     
     print(ret == os.EX_OK)
 
-
-currNonBlockingProcess=None
-def startNonBlockingProcess4(filenames):
-    global currNonBlockingProcess
-
-    if currNonBlockingProcess:
-        killtree(currNonBlockingProcess)
-        currNonBlockingProcess = None
-
-    externalCmd = getExternalCmd(filenames) + ' & echo $!'
-    currNonBlockingProcess = subprocess.check_output(externalCmd,shell=True)
-    print('what call returned--')
-    print(str(currNonBlockingProcess))
-    #p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
-    #currNonBlockingProcess = p1.pid
-    print('runnig process')
-
-
-def startNonBlockingProcess3(filenames):
-    global currNonBlockingProcess
-
-    if currNonBlockingProcess:
-        killtree(currNonBlockingProcess)
-        currNonBlockingProcess = None
-
-    externalCmd = getExternalCmd(filenames).split()
-    p1 = subprocess.Popen(externalCmd,stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
-    currNonBlockingProcess = p1.pid
-    print('runnig process')
-
-
 currProcess = None
 def waitForJoin():
-    if currProcess:
+    global currProcess
+    if currProcess and currProcess.is_alive():
         currProcess.join()
+    else:
+        currProcess = None
 
-
-def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
+def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTracks):
     #print('inside startNB')
     global currProcess
     if currProcess != None:
-        print('terminating - ' + str(currProcess))
-        #currProcess.kill()
+        print('terminating - ' + str(currProcess.pid))
         #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
-        subprocess.Popen(['vlc-ctrl',  'pause'])
         if currProcess.is_alive():
+            try:
+                subprocess.Popen(['vlc-ctrl',  'stop'])
+            except Exception:
+                pass
             print('terminating - ' + str(currProcess.pid))
             killtree(currProcess.pid)
     else:
@@ -114,7 +88,8 @@ def startNonBlockingProcess(filenames,targetProcess=playAllTracks):
     p.start()
     currProcess = p
     print('process in run:' + str(currProcess.pid))
-    # p.join()
+    if isBlocking:
+        p.join()
 
 
 

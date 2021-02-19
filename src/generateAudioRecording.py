@@ -16,7 +16,7 @@ def getHindiDate(date,month,year):
 
     day_hindi = str(date_map[date])
     day_hindi = day_hindi + ' ' + str(month_map[month])
-    day_hindi = day_hindi + ' ' + str(year_map[year])
+#    day_hindi = day_hindi + ' ' + str(year_map[year])
     return day_hindi
 
 def generateHindiAudioFromDate(dateTimeObj):
@@ -52,6 +52,9 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं . किसी हॉस्पिटल कर्मचारी से बात करने के लिए दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('welcomeState1'))
 
+    audioObj = gTTS(text='आगे उपलब्ध आठ तारीखों में से एक का चुनाव करें', lang='hi', slow=False) 
+    audioObj.save(key2file('bookInstr'))
+
     # audioObj = gTTS(text='आपने चुना है', lang='hi', slow=False) 
     # audioObj.save(key2file('confirmState1'))
 
@@ -80,8 +83,8 @@ def generateOtherAudioFiles():
     # audioObj.save(key2file('timeout'))
 
 def main():
-    generateAudioForNextDays(datetime.datetime.now(),31)
-    #generateOtherAudioFiles()
+    #generateAudioForNextDays(datetime.datetime.now(),31)
+    generateOtherAudioFiles()
 
 
 main()

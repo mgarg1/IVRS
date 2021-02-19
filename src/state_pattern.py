@@ -109,9 +109,8 @@ class bookState(State):
     def __init__(self):
         self.idleTime = 50.0
         self.availDates = findNextDates(numOfDays=8)
-        #print('Booking State\n 1-Today\n2-Tomorrow\n3-DayAfter')
         self.stateMessage = 'Booking State:\n'
-        self.audioList = []
+        self.audioList = [key2file('bookInstr')]
         for x in range(0,len(self.availDates)):
             self.stateMessage += f'Press ' + str(x+1) + ' for ' + self.availDates[x] + '\n'
             self.audioList = self.audioList + self.createAudioList(str(x+1), self.availDates[x])
@@ -147,16 +146,20 @@ class bookState(State):
     def press9(self,atm):
         atm.state = talkState()
 
+keepAlive=True
 def commonExit(msg):
-    print('inside Common Exit')
+    print('inside Common Exit',flush=True)
     GPIO.cleanup()
     waitForJoin()
     # can write to someplace
-    raise SystemExit(msg)
+    print('pid - ' + str(os.getpid()))
+    global keepAlive
+    keepAlive=False
+    raise Exception(msg)
+    #raise SystemExit(msg)
     #raise Exception('exitState:' + resMsg)
-    # exit(0)
+    #exit(0)
    
-
 class exitState(State):
     def __init__(self,resMsg):
         print('exitState:' + resMsg, flush=True)
@@ -253,12 +256,13 @@ class ATM:
 #     asyncio.run(main2())
 
 def remindToPress(atmObj):
-    startNonBlockingProcess([key2file('retry')])
-    timer3 = Timer(5.0, atmObj.state.speak)
+    startNonBlockingProcess([key2file('retry')],True)
+    timer3 = Timer(2.0, atmObj.state.speak)
     timer3.start()
 
 def noResponseExit():
-    startNonBlockingProcess([key2file('timeout')])
+    startNonBlockingProcess([key2file('timeout')],True)
+    print('reached in noResponseExit',flush=True)
     commonExit('no response exit')
     #os.kill(os.getpid(), signal.SIGTERM)
 
@@ -315,15 +319,16 @@ def main3(phoneNum):
     callback_rt = lambda x:dtmf_call(x,atm)
     GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
     #GPIO.remove_event_detect(SDT)
-        
-    while True:
+
+    global keepAlive
+    while keepAlive:
        pass
 
-if __name__ == '__main__':
-
+def preMain():
     if len(sys.argv) != 2:
         print('invalid argument list')
     else:
         phoneNum=str(sys.argv[1])
         print('phone num recvd -> ' + phoneNum)
+        print('pid - ' + str(os.getpid()))
         main3(phoneNum)

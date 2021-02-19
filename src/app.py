@@ -32,40 +32,25 @@ def show_post(phoneNum):
 
     print('PhoneNum - ' + phoneNum + ' & PhoneNum2 - ' + phoneNum2)
 
+    #The try block does not raise any errors, so the else block is executed:
     try:
         main3(phoneNum2)
     except Exception as ExceptionStr:
         print(ExceptionStr)
-        #if ExceptionStr.find('exitState'):
-        #    print('found')
-        #    return ExceptionStr.replace('exitState:',''),200
-    return 'Sucess',200
-    # print('123' + ToDoc)
-
-    # p1 = subprocess.Popen([VENV_PYTHON,MAIN_SCRIPT,phoneNum2], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
-    # oldProcessId=p1.pid
-    # #stdout1, stderr1 = p1.communicate()
-    # #print(str(stdout1.decode()))
-    # p1.stdout.flush()
-    
-    # while p1.poll() == None:
-    #     line = p1.stdout.readline()
-    #     #line = line.decode(encoding='utf-8')
-    #     if not line:
-    #         print('invalid/blank line')
-    #         continue
-    #     elif line.find('exitState') != -1: 
-    #         print('pinned line - ' + line)
-    #         return line.replace('exitState:',''),200
-
-    # print("test:", line.rstrip())
-
+        if ExceptionStr.find('exitState'):
+            print('found')
+            return ExceptionStr.replace('exitState:',''),200
+        elif ExceptionStr.find('no response exit'):
+            print('found no response')
+    else:
+        return 'Sucess',200
     return 'Command Not known',501
 
 
 @app.route('/kilall', methods=['GET','POST'])
 def kill_all_process():
     #kill all the running process
+    global oldProcessId
     if oldProcessId:
         killtree(oldProcessId)
         oldProcessId = None
