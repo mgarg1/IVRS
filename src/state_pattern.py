@@ -1,9 +1,9 @@
 import abc,os,signal
 from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
-from dateToNum import date2audioFiles, startNonBlockingProcess,key2file,key2fileWithoutMap,waitForJoin
+from dateToNum import date2audioFiles,startNonBlockingProcess,stopNonBlockingProcess,key2file,key2fileWithoutMap,waitForJoin
 from phoneCmds import registerCallback
+from dtmf_decoder3 import gpio_initialize,read_dtmf,register_callback, gpio_clean
 import re,sys
-import RPi.GPIO as GPIO
 
 # import asyncio
 from threading import Timer
@@ -149,8 +149,8 @@ class bookState(State):
 keepAlive=True
 def commonExit(msg):
     print('inside Common Exit',flush=True)
-    GPIO.cleanup()
     waitForJoin()
+    destroyAll()
     # can write to someplace
     print('pid - ' + str(os.getpid()))
     global keepAlive
@@ -218,6 +218,7 @@ class alreadyState(State):
     def press9(self,atm):
         atm.state = talkState()
 
+@singleton
 class ATM:
     def __init__(self,phoneNum='9876543210'):
         
@@ -266,59 +267,48 @@ def noResponseExit():
     commonExit('no response exit')
     #os.kill(os.getpid(), signal.SIGTERM)
 
-
-#Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
-Q1,Q2,Q3,Q4,SDT = 29,31,33,35,37
-INBITS = [Q1,Q2,Q3,Q4,SDT]
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(INBITS, GPIO.IN)
-
 timer1=None
 timer2=None
 
-def dtmf_call(channel,atmObj):
-    print('key pressed')
+def stop_Timer():
     global timer1
     global timer2
     if timer1:
         timer1.cancel()
     if timer2:
         timer2.cancel()
+
+def init_Timer(idleTime,atmObj):
+    global timer1
+    global timer2
+
+    stop_Timer()
         
-    binStr = str(GPIO.input(Q4))+str(GPIO.input(Q3))+str(GPIO.input(Q2))+str(GPIO.input(Q1))
-    decNum = int(binStr,2)
-    if decNum == 10:
-        decNum = 0
-        
-    atmObj.press(str(decNum))
-    idleTime = atmObj.state.idleTime
     timer1 = Timer(idleTime + 10.0, remindToPress,[atmObj])
     timer1.start()
 
     timer2 = Timer(idleTime + 40.0, noResponseExit)
     timer2.start()
     
-    print(decNum)
 
-def main3(phoneNum):
+def destroyAll():
+    stopNonBlockingProcess()
+    stop_Timer()
+    gpio_clean()
+
+def keyPressCallback(channel,atmObj):
+    stop_Timer()
+    keyPressed = read_dtmf()
+    atmObj.press(keyPressed)
+    init_Timer(atmObj.state.idleTime,atmObj)
+
+def main4(phoneNum):
     #sys.stdout.flush()
-
+    gpio_initialize()
     atm = ATM(phoneNum)
-    idleTime = atm.state.idleTime
-    global timer1
-    global timer2
-    
-    timer1 = Timer(idleTime + 10.0, remindToPress,[atm])
-    timer1.start()
-
-    timer2 = Timer(idleTime + 40.0, noResponseExit)
-    timer2.start()
-
-    
-    callback_rt = lambda x:dtmf_call(x,atm)
-    GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
-    #GPIO.remove_event_detect(SDT)
+    init_Timer(atm.state.idleTime,atm)
+    callback_rt = lambda x:keyPressCallback(x,atm)
+    register_callback(callback_rt)
 
     global keepAlive
     while keepAlive:
@@ -332,3 +322,5 @@ def preMain():
         print('phone num recvd -> ' + phoneNum)
         print('pid - ' + str(os.getpid()))
         main3(phoneNum)
+
+

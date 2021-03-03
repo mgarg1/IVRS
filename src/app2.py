@@ -30,7 +30,8 @@ def show_post(phoneNum):
     #stdout1, stderr1 = p1.communicate()
     #print(str(stdout1.decode()))
 
-    while True:
+    exitStateReached = True
+    while exitStateReached:
         line = p1.stdout.readline()
         #line = line.decode(encoding='utf-8')
         if not line:
@@ -38,11 +39,13 @@ def show_post(phoneNum):
             continue
         elif line.find('exitState') != -1: 
             print('pinned line - ' + line)
-            return line
-
-        print("test:", line.rstrip())
-   
-    return 'hello'
+            exitStateReached = False
+        else
+            print('exitState reached')
+            exitStateReached = True
+    
+    print("test:", line.rstrip())
+    return line
 
 
 @app.route('/', methods=['GET'])

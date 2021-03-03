@@ -55,7 +55,6 @@ def playAllTracks(cmdToRun):
     #TODO:try catch here
     ret = subprocess.check_output(cmdToRun,shell=True)
     #ret = os.system(cmdToRun)
-    
     print(ret == os.EX_OK)
 
 currProcess = None
@@ -66,10 +65,9 @@ def waitForJoin():
     else:
         currProcess = None
 
-def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTracks):
-    #print('inside startNB')
+def stopNonBlockingProcess():
     global currProcess
-    if currProcess != None:
+    if currProcess:
         print('terminating - ' + str(currProcess.pid))
         #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
         if currProcess.is_alive():
@@ -81,8 +79,20 @@ def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTrac
             killtree(currProcess.pid)
     else:
         print('invalid currProcess ' + str(currProcess))
-    
+
+
+def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTracks):
+    #print('inside startNB')
+    stopNonBlockingProcess()
     externalCmd =  getExternalCmd(filenames)
+
+    callback_rt = lambda x:keyPressCallback(x,atm)
+    callback_rt = lambda x:subprocess.check_output(externalCmd,shell=True)
+    register_callback(callback_rt)
+    
+    ret = subprocess.check_output(externalCmd,shell=True)
+    #ret = os.system(cmdToRun)
+    print(ret == os.EX_OK)
     p = Process(target=targetProcess,args=(externalCmd,))
     #p.daemon = True
     p.start()
