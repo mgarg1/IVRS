@@ -10,7 +10,7 @@ audioRecordingshindiNumbersPath = os.path.join(audioRecordingsPath,'hindidates')
 
 fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
     'keliye':'keliye.mp4',
-    'dabayein':'dabayein.wav',
+    'dabayein':'dabayein.mp4',
     'confirmState1':'confirmState1.mp4',
     'confirmState2':'confirmState2.mp4',
     'alreadyState1':'alreadyState1.mp4',
@@ -61,6 +61,7 @@ currProcess = None
 def waitForJoin():
     global currProcess
     if currProcess and currProcess.is_alive():
+        print('waiting to Join')
         currProcess.join()
     else:
         currProcess = None
@@ -68,7 +69,7 @@ def waitForJoin():
 def stopNonBlockingProcess():
     global currProcess
     if currProcess:
-        print('terminating - ' + str(currProcess.pid))
+        print('trying to terminate - ' + str(currProcess.pid))
         #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
         if currProcess.is_alive():
             try:
@@ -82,17 +83,10 @@ def stopNonBlockingProcess():
 
 
 def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTracks):
+    global currProcess
     #print('inside startNB')
     stopNonBlockingProcess()
     externalCmd =  getExternalCmd(filenames)
-
-    callback_rt = lambda x:keyPressCallback(x,atm)
-    callback_rt = lambda x:subprocess.check_output(externalCmd,shell=True)
-    register_callback(callback_rt)
-    
-    ret = subprocess.check_output(externalCmd,shell=True)
-    #ret = os.system(cmdToRun)
-    print(ret == os.EX_OK)
     p = Process(target=targetProcess,args=(externalCmd,))
     #p.daemon = True
     p.start()
@@ -103,13 +97,18 @@ def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTrac
 
 
 
-def date2audioFiles(bookDate):
+def date2audioFiles(bookDate,includeYear=False):
     from datetime import datetime
     datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
 
-    filename = datetime_obj.strftime('%d_%m_%Y') + '.mp4'
-    filename = os.path.join(audioRecordingshindiNumbersPath,filename)
+    date_filename = datetime_obj.strftime('%d_%m') + '.mp4'
+    date_filename = os.path.join(audioRecordingshindiNumbersPath,date_filename)
 
-    dateFileList = [filename]
+    dateFileList = [date_filename]
+    if includeYear:
+        year_filename = datetime_obj.strftime('%Y') + '.mp4'
+        year_filename = os.path.join(audioRecordingshindiNumbersPath,year_filename)
+        dateFileList += [year_filename]
+
     return dateFileList
 

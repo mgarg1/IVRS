@@ -40,7 +40,7 @@ def show_post(phoneNum):
         elif line.find('exitState') != -1: 
             print('pinned line - ' + line)
             exitStateReached = False
-        else
+        else:
             print('exitState reached')
             exitStateReached = True
     

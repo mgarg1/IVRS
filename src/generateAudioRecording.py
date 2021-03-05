@@ -4,36 +4,62 @@ import os
 from dateToNum import key2file,key2fileWithoutMap,audioRecordingsPath,audioRecordingshindiNumbersPath
 import datetime
 
-def getHindiDate(date,month,year):
-    date_map = ['०','१','२','३','४','५','६','७','८','९',
-    '१०','११','१२','१३','१४','१५','१६','१७','१८','१९',
-    '२०','२१','२२','२३','२४','२५','२६','२७','२८','२९',
-    '३०','३१']
+#converts 6789 -> '६७८९'
+def getHindiNumberString(num):
+    if type(num) !=  int:
+        print('Error in getHindiNumberString - not an int')
+        return ''
 
+    num_map = ['०','१','२','३','४','५','६','७','८','९']
+    hindi_num = ''
+    if num == 0:
+        hindi_num = num_map[0]
+   
+    while num != 0:
+        hindi_num = num_map[num % 10] + hindi_num
+        num = int(num/10)
+    
+    # print(hindi_num)
+    return hindi_num
+
+def getHindiDate(date,month,year=None):
     month_map  =  ['','जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सेप्टैंबर','अक्टूबर','नवम्बर','दिसम्बर']
-
-    year_map = ['२०२०','२०२१','२०२२','२०२३']
-
-    day_hindi = str(date_map[date])
-    day_hindi = day_hindi + ' ' + str(month_map[month])
-#    day_hindi = day_hindi + ' ' + str(year_map[year])
+    day_hindi = getHindiNumberString(date)
+    day_hindi = day_hindi + ' ' + month_map[month]
+    if year:
+        day_hindi = day_hindi + ' ' + getHindiNumberString(year)
+    
     return day_hindi
 
-def generateHindiAudioFromDate(dateTimeObj):
-    day = int(dateTimeObj.strftime('%d'))
-    mon = int(dateTimeObj.strftime('%m'))
-    yer = int(dateTimeObj.strftime('%Y')) - 2020
-
-    hindi_date = getHindiDate(day,mon,yer)
+def generate_gtts_file(text_string,filename):
     try:
-        audioObj = gTTS(text=hindi_date, lang='hi', slow=False)
+        audioObj = gTTS(text=text_string, lang='hi', slow=False)
     except:
-        print('exeption occured')
-    filename = dateTimeObj.strftime('%d_%m_%Y')
+        print('exeption occurred')
+
     audio_file = (filename+".mp4")    
     #saving the audio_file '<file_input>.mp4' into the directory
     audioObj.save(os.path.join(audioRecordingshindiNumbersPath,audio_file))
     # os.system(audio_file)
+
+def generateHindiAudioFromDate(dateTimeObj,includeYear=False):
+    day = int(dateTimeObj.strftime('%d'))
+    mon = int(dateTimeObj.strftime('%m'))
+    yer = None
+    dateFormat = '%d_%m'
+    if includeYear:
+        yer = int(dateTimeObj.strftime('%Y'))
+        dateFormat = '%d_%m_%Y'
+
+    hindi_date = getHindiDate(day,mon,yer)
+    filename = dateTimeObj.strftime(dateFormat)
+    generate_gtts_file(hindi_date,filename)
+
+def generateOnlyYears(numOfYears):
+    for i in range(0,numOfYears):
+        hindiYear = getHindiNumberString(2020+i)
+        generate_gtts_file(hindiYear,str(2020+i))
+
 
 def generateAudioForNextDays(startDate,days):
     for i in range(0,days):
@@ -47,7 +73,7 @@ def generateOtherAudioFiles():
     # count_map = ['०','१','२','३','४','५','६','७','८','९']
     # for i in range(0,10):
     #     audioObj = gTTS(text=(str(count_map[i]) + ' दबाएं'), lang='hi', slow=False) 
-    #     audioObj.save(str(i)+'_hindi.mp4')
+    #     audioObj.save(key2fileWithoutMap(str(i)+'_dabayein.mp4'))
 
     # audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं . किसी हॉस्पिटल कर्मचारी से बात करने के लिए दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('welcomeState1'))
@@ -83,8 +109,10 @@ def generateOtherAudioFiles():
     # audioObj.save(key2file('timeout'))
 
 def main():
-    #generateAudioForNextDays(datetime.datetime.now(),31)
+    # # Leap Year to cover all recordings
+    # startDate = datetime.datetime(2000, 1, 1, 0, 0)
+    # generateAudioForNextDays(datetime.datetime.now(),366)
+    # generateOnlyYears(10)
     generateOtherAudioFiles()
-
 
 main()

@@ -4,8 +4,10 @@ import subprocess
 # from subprocess import Popen,PIPE
 import re
 from ivrs_utils import killtree
-from state_pattern import main3
-
+from state_pattern import main4
+import sys
+from dtmf_decoder3 import gpio_initialize
+sys.tracebacklimit = 0
 # Path to a Python interpreter that runs any Python script
 # under the virtualenv /path/to/virtualenv/
 VENV_PYTHON = "../venv/bin/python"
@@ -14,7 +16,7 @@ MAIN_SCRIPT = "state_pattern.py"
 
 
 app = Flask(__name__)
-
+gpio_initialize()
 oldProcessId=None
 
 @app.route('/phoneNum/<string:phoneNum>', methods=['GET','POST'])
@@ -34,16 +36,19 @@ def show_post(phoneNum):
 
     #The try block does not raise any errors, so the else block is executed:
     try:
-        main3(phoneNum2)
+        retVal = main4(phoneNum2)
     except Exception as ExceptionStr:
         print(ExceptionStr)
-        if ExceptionStr.find('exitState'):
-            print('found')
-            return ExceptionStr.replace('exitState:',''),200
-        elif ExceptionStr.find('no response exit'):
-            print('found no response')
+        # if ExceptionStr.find('exitState'):
+        #     print('exitState found\n')
+        #     return ExceptionStr.replace('exitState:',''),200
+        # elif ExceptionStr.find('no response exit'):
+        #     print('found no response\n')
     else:
+        print('no Exception Raised\n')
+        print(retVal)
         return 'Sucess',200
+
     return 'Command Not known',501
 
 

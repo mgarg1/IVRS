@@ -19,6 +19,8 @@ flask - for a webserver to initiate the flow with caller ID, and respond with ht
 
 ## TODO -BUGS
 [] Automate - keep checking if call is active 
+[] Singleton - https://pypi.org/project/singleton-decorator/
+[] Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
 
 ## TODO - Enhancement
 [] Implement Token number

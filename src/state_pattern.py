@@ -3,10 +3,11 @@ from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
 from dateToNum import date2audioFiles,startNonBlockingProcess,stopNonBlockingProcess,key2file,key2fileWithoutMap,waitForJoin
 from phoneCmds import registerCallback
 from dtmf_decoder3 import gpio_initialize,read_dtmf,register_callback, gpio_clean
+from singleton_decorator import singleton
 import re,sys
 
 # import asyncio
-from threading import Timer
+from threading import Timer,Thread
 
 # class Timer:
     # def __init__(self, timeout, callback):
@@ -147,21 +148,25 @@ class bookState(State):
         atm.state = talkState()
 
 keepAlive=True
+retVal=None
 def commonExit(msg):
     print('inside Common Exit',flush=True)
     waitForJoin()
-    destroyAll()
-    # can write to someplace
+    # destroyAll()
+    # # can write to someplace
     print('pid - ' + str(os.getpid()))
+    global retVal
+    retVal=msg
     global keepAlive
     keepAlive=False
-    raise Exception(msg)
+    # raise Exception(msg)
     #raise SystemExit(msg)
     #raise Exception('exitState:' + resMsg)
     #exit(0)
    
 class exitState(State):
     def __init__(self,resMsg):
+        self.idleTime = 15.0
         print('exitState:' + resMsg, flush=True)
         commonExit('exitState:' + resMsg)
 
@@ -178,7 +183,7 @@ class confirmState(State):
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
         '''
-        self.audioList = [key2file('confirmState1')] + date2audioFiles(bookDate) + [key2file('confirmState2')] 
+        self.audioList = [key2file('confirmState1')] + date2audioFiles(bookDate,includeYear=True) + [key2file('confirmState2')] 
         self.speak()
 
     def press1(self, atm):
@@ -202,7 +207,7 @@ class alreadyState(State):
         self.idleTime = 20.0
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
         self.existingBookingDate = bookDate
-        self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate) + [key2file('alreadyState2')]
+        self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate,includeYear=True) + [key2file('alreadyState2')]
         self.speak()
 
     def press1(self,atm):
@@ -221,7 +226,12 @@ class alreadyState(State):
 @singleton
 class ATM:
     def __init__(self,phoneNum='9876543210'):
+        if not re.search("^\d{10}$", phoneNum):
+            raise Exception('not a 10 digit number - ' + phoneNum)
+        self.phoneNum = phoneNum        
         
+
+    def reset(self,phoneNum):
         if not re.search("^\d{10}$", phoneNum):
             raise Exception('not a 10 digit number - ' + phoneNum)
         
@@ -304,15 +314,25 @@ def keyPressCallback(channel,atmObj):
 
 def main4(phoneNum):
     #sys.stdout.flush()
+    # destroyAll()
+    global keepAlive
+    keepAlive = True
     gpio_initialize()
     atm = ATM(phoneNum)
+    atm.reset(phoneNum)
+
     init_Timer(atm.state.idleTime,atm)
+    
     callback_rt = lambda x:keyPressCallback(x,atm)
     register_callback(callback_rt)
 
-    global keepAlive
     while keepAlive:
        pass
+    del atm
+    destroyAll()
+    global retVal
+    print('\nMain EXITED\n')
+    return retVal
 
 def preMain():
     if len(sys.argv) != 2:
