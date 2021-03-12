@@ -1,8 +1,8 @@
 # IVRS
-This project is about implementing the IVRS system using the raspberry pi and a phone and a DTMF decoder
-tinydb -  for database
-gtts - for generating the audio
-flask - for a webserver to initiate the flow with caller ID, and respond with http response of the user confirmation 
+* This project is about implementing the IVRS system using the raspberry pi and a phone and a DTMF decoder
+  * tinydb -  for database
+  * gtts - for generating the audio
+  * flask - for a webserver to initiate the flow with caller ID, and respond with http response of the user confirmation 
 
 ##  SiteMap
 ###  src/
@@ -19,9 +19,9 @@ flask - for a webserver to initiate the flow with caller ID, and respond with ht
 * DTMF generator - https://www.audiocheck.net/audiocheck_dtmf.php
 
 ## TODO -BUGS
-[] Automate - keep checking if call is active 
-[] Singleton - https://pypi.org/project/singleton-decorator/
-[] Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
+- [ ] Automate - keep checking if call is active 
+- [ ] Singleton - https://pypi.org/project/singleton-decorator/
+- [ ] Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
 
 ## TODO - Enhancement
 [] Implement Token number
@@ -44,3 +44,5 @@ http://192.168.0.118:10100/kilall
 
 record audio in python:
 https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone
+- [ ] Implement Token number
+- [ ] URI based holiday update
