@@ -10,6 +10,30 @@
 ## Circuit Diagram
 ![Circuit Diagram](other/images/IVRS.png)
 
+## TODO - Enhancement
+- [ ] Automate - keep checking if call is active
+- [ ] URI based holiday update
+- [ ] Sending message to WhatsApp - https://llamalab.com/automate/community/flows/8315
+- [ ] Callback functionality
+- [ ] remove pastebin flow - instead pdf download
+
+## Linux DTMF Setup
+```bash
+apt-get install multimon-ng
+multimon-ng -t wav -a DTMF other/audiocheck.net_dtmf_112163_112196_11#9632_##9696.wav 
+https://www.reddit.com/r/amateurradio/comments/f0wmux/could_use_some_help_with_multimonng_for_decoding/
+https://cloudacm.com/?p=3197
+sox -b 16 -e signed-integer -r 22k -c 1 -d -t wavpcm -| multimon-ng -a dtmf -
+# record audio in python:
+https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone
+
+```
+## Supported REST Commands
+* http://<hostname:port>/phoneNum/9876543210
+* http://<hostname:port>/kilall
+* http://<hostname:port>/cmd/pub
+* http://<hostname:port>/cmd/pub/17-March-2021
+
 ## Imp Links:
 * https://components101.com/modules/mt8870-dtmf-decoder-module
 * https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
@@ -17,32 +41,5 @@
 * https://github.com/Drewsif/PiShrink
 * https://readthedocs.org/projects/gtts/downloads/pdf/latest/
 * DTMF generator - https://www.audiocheck.net/audiocheck_dtmf.php
-
-## TODO -BUGS
-- [ ] Automate - keep checking if call is active 
-- [ ] Singleton - https://pypi.org/project/singleton-decorator/
-- [ ] Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
-
-## TODO - Enhancement
-[] Implement Token number
-[] URI based holiday update
-[] Sending message to WhatsApp - https://llamalab.com/automate/community/flows/8315
-
-
-apt-get install multimon-ng
-multimon-ng -t wav -a DTMF audiocheck.net_dtmf_112163_112196_11#9632_##9696.wav 
-
-https://www.reddit.com/r/amateurradio/comments/f0wmux/could_use_some_help_with_multimonng_for_decoding/
-
-https://cloudacm.com/?p=3197
-
-sox -b 16 -e signed-integer -r 22k -c 1 -d -t wavpcm -| multimon-ng -a dtmf -
-
-
-http://192.168.0.118:10100/phoneNum/9660813119
-http://192.168.0.118:10100/kilall
-
-record audio in python:
-https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone
-- [ ] Implement Token number
-- [ ] URI based holiday update
+* Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
+* Singleton - https://pypi.org/project/singleton-decorator/

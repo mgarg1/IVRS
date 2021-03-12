@@ -3,3 +3,4 @@ venv/
 __pycache__/
 src/phoneDB.json
 src/sensitive.py
+src/phoneDB.json

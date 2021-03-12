@@ -33,14 +33,18 @@ def totalBookOnDate(bookDate):
     #phoneData = Query()
     return phoneDB.count(where('bookDate') == bookDate)
 
-def allAptsOnDate(bookDate):
-    #TODO : include Token Number in the result
+def allAptsOnDate(bookDate,obfuscate=False):
     #phoneData = Query()
     totalBookings = phoneDB.search(where('bookDate') == bookDate)
     booking_data = ''
+    totalBookings_sorted = sorted(totalBookings, key=lambda k: int(k['tokenNum'])) 
     for i in totalBookings:
-        booking_data += '#'*(len(i['phoneNum']) - 4) + i['phoneNum'][-4:]
+        if obfuscate:
+            booking_data += '%s. ####%s' % (i['tokenNum'],i['phoneNum'][-6:])
+        else:
+            booking_data += '%s. %s' % (i['tokenNum'],i['phoneNum'])
         booking_data += "\n"
+
     return booking_data
 
 def storeBooking(phoneNum,bookDate):
@@ -53,6 +57,7 @@ def storeBooking(phoneNum,bookDate):
     phoneDB.upsert({'tokenDate': bookDate, 'maxTokenNum': str(maxToken)}, where('tokenDate') == bookDate)
     # insert the new appointment
     phoneDB.insert({'phoneNum': phoneNum, 'bookDate': bookDate, 'tokenNum': str(maxToken)})
+    return str(maxToken)
 
 def cancelBooking(phoneNum):
     phoneDB.remove(where('phoneNum') == phoneNum)

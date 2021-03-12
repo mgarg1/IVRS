@@ -63,7 +63,7 @@ def generateOnlyYears(numOfYears):
 
 def generateAudioForWeekdays():
     weekday_hindi_text = ["सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार","रविवार"]
-    for i in range(0,6):
+    for i in range(0,7):
         generate_gtts_file(weekday_hindi_text[i],WEEKDAYS_HINDI[i],audioRecordingsPath+"/"+"hindiaudio")
 
 

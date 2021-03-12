@@ -188,12 +188,10 @@ class confirmState(State):
 
     def press1(self, atm):
         # Save to DB, SMS to user
-        storeBooking(atm.phoneNum, self.bookDate)
-        # TODO:: tell the day also e.g- wednesday
+        tokenNum = storeBooking(atm.phoneNum, self.bookDate)
         self.audioList = [key2file('booked')]
         self.speak()
-        resStr = 'Booking Confirmed,' + atm.phoneNum + ',' + self.bookDate
-        resStr = 'Appointment confirm date - ' + self.bookDate + ' -Mayuri Hospital'
+        resStr = 'Appointment confirmed!! Date - ' + self.bookDate + ' , Token number - ' + tokenNum + ' -Mayuri Hospital'
         atm.state = exitState(resStr)
 
     def press2(self, atm):
@@ -336,13 +334,13 @@ def main4(phoneNum,appCtx):
     print('\nMain EXITED\n')
     return retVal
 
-def preMain():
-    if len(sys.argv) != 2:
-        print('invalid argument list')
-    else:
-        phoneNum=str(sys.argv[1])
-        print('phone num recvd -> ' + phoneNum)
-        print('pid - ' + str(os.getpid()))
-        main3(phoneNum)
+# def preMain():
+#     if len(sys.argv) != 2:
+#         print('invalid argument list')
+#     else:
+#         phoneNum=str(sys.argv[1])
+#         print('phone num recvd -> ' + phoneNum)
+#         print('pid - ' + str(os.getpid()))
+#         main3(phoneNum)
 
 
