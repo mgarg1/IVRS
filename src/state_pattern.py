@@ -183,7 +183,7 @@ class confirmState(State):
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
         '''
-        self.audioList = [key2file('confirmState1')] + date2audioFiles(bookDate,includeYear=True) + [key2file('confirmState2')] 
+        self.audioList = [key2file('confirmState1')] + date2audioFiles(bookDate,includeYear=True,includeDayOfWeek=True) + [key2file('confirmState2')] 
         self.speak()
 
     def press1(self, atm):
@@ -207,7 +207,7 @@ class alreadyState(State):
         self.idleTime = 20.0
         self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
         self.existingBookingDate = bookDate
-        self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate,includeYear=True) + [key2file('alreadyState2')]
+        self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate,includeYear=True,includeDayOfWeek=True) + [key2file('alreadyState2')]
         self.speak()
 
     def press1(self,atm):
@@ -312,7 +312,7 @@ def keyPressCallback(channel,atmObj):
     atmObj.press(keyPressed)
     init_Timer(atmObj.state.idleTime,atmObj)
 
-def main4(phoneNum):
+def main4(phoneNum,appCtx):
     #sys.stdout.flush()
     # destroyAll()
     global keepAlive
@@ -326,8 +326,10 @@ def main4(phoneNum):
     callback_rt = lambda x:keyPressCallback(x,atm)
     register_callback(callback_rt)
 
-    while keepAlive:
+    while keepAlive and appCtx['keepAlive']:
        pass
+
+    print('Main Process ended')
     del atm
     destroyAll()
     global retVal

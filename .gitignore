@@ -1,5 +1,5 @@
 venv/
 *.swp
 __pycache__/
-audioRecordings/hindidates/
 src/phoneDB.json
+src/sensitive.py

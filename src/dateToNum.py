@@ -3,6 +3,7 @@ from sys import platform
 from multiprocessing import Process, Value, Array
 import threading,time,os,signal,subprocess
 from ivrs_utils import killtree
+from constants import WEEKDAYS_HINDI
 
 rootPath = os.path.join(os.getcwd(),'..')
 audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
@@ -77,6 +78,7 @@ def stopNonBlockingProcess():
             except Exception:
                 pass
             print('terminating - ' + str(currProcess.pid))
+            # currProcess.terminate()
             killtree(currProcess.pid)
     else:
         print('invalid currProcess ' + str(currProcess))
@@ -97,7 +99,7 @@ def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTrac
 
 
 
-def date2audioFiles(bookDate,includeYear=False):
+def date2audioFiles(bookDate,includeYear=False,includeDayOfWeek=False):
     from datetime import datetime
     datetime_obj = datetime.strptime(bookDate,'%d-%B-%Y')
 
@@ -109,6 +111,11 @@ def date2audioFiles(bookDate,includeYear=False):
         year_filename = datetime_obj.strftime('%Y') + '.mp4'
         year_filename = os.path.join(audioRecordingshindiNumbersPath,year_filename)
         dateFileList += [year_filename]
+    
+    if includeDayOfWeek:
+        #TODO: use key to file mapping for weekdays
+        week_filename = WEEKDAYS_HINDI[datetime_obj.weekday()] + '.mp4'
+        week_filename = key2fileWithoutMap(week_filename)
+        dateFileList = [week_filename] + dateFileList
 
     return dateFileList
-

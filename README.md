@@ -16,6 +16,7 @@ flask - for a webserver to initiate the flow with caller ID, and respond with ht
 * https://stackoverflow.com/a/7027113/1496826
 * https://github.com/Drewsif/PiShrink
 * https://readthedocs.org/projects/gtts/downloads/pdf/latest/
+* DTMF generator - https://www.audiocheck.net/audiocheck_dtmf.php
 
 ## TODO -BUGS
 [] Automate - keep checking if call is active 
@@ -25,3 +26,21 @@ flask - for a webserver to initiate the flow with caller ID, and respond with ht
 ## TODO - Enhancement
 [] Implement Token number
 [] URI based holiday update
+[] Sending message to WhatsApp - https://llamalab.com/automate/community/flows/8315
+
+
+apt-get install multimon-ng
+multimon-ng -t wav -a DTMF audiocheck.net_dtmf_112163_112196_11#9632_##9696.wav 
+
+https://www.reddit.com/r/amateurradio/comments/f0wmux/could_use_some_help_with_multimonng_for_decoding/
+
+https://cloudacm.com/?p=3197
+
+sox -b 16 -e signed-integer -r 22k -c 1 -d -t wavpcm -| multimon-ng -a dtmf -
+
+
+http://192.168.0.118:10100/phoneNum/9660813119
+http://192.168.0.118:10100/kilall
+
+record audio in python:
+https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone

@@ -20,5 +20,5 @@ def register_callback(callback_rt):
     GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
 
 def gpio_clean():
-    GPIO.remove_event_detect(SDT)
+    # GPIO.remove_event_detect(SDT)
     GPIO.cleanup()

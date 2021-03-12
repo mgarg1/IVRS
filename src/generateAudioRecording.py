@@ -3,6 +3,7 @@ from gtts import gTTS
 import os
 from dateToNum import key2file,key2fileWithoutMap,audioRecordingsPath,audioRecordingshindiNumbersPath
 import datetime
+from constants import WEEKDAYS_HINDI
 
 #converts 6789 -> '६७८९'
 def getHindiNumberString(num):
@@ -31,7 +32,7 @@ def getHindiDate(date,month,year=None):
     
     return day_hindi
 
-def generate_gtts_file(text_string,filename):
+def generate_gtts_file(text_string,filename,dest_path=audioRecordingshindiNumbersPath):
     try:
         audioObj = gTTS(text=text_string, lang='hi', slow=False)
     except:
@@ -39,7 +40,7 @@ def generate_gtts_file(text_string,filename):
 
     audio_file = (filename+".mp4")    
     #saving the audio_file '<file_input>.mp4' into the directory
-    audioObj.save(os.path.join(audioRecordingshindiNumbersPath,audio_file))
+    audioObj.save(os.path.join(dest_path,audio_file))
     # os.system(audio_file)
 
 def generateHindiAudioFromDate(dateTimeObj,includeYear=False):
@@ -59,6 +60,11 @@ def generateOnlyYears(numOfYears):
     for i in range(0,numOfYears):
         hindiYear = getHindiNumberString(2020+i)
         generate_gtts_file(hindiYear,str(2020+i))
+
+def generateAudioForWeekdays():
+    weekday_hindi_text = ["सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार","रविवार"]
+    for i in range(0,6):
+        generate_gtts_file(weekday_hindi_text[i],WEEKDAYS_HINDI[i],audioRecordingsPath+"/"+"hindiaudio")
 
 
 def generateAudioForNextDays(startDate,days):
@@ -113,6 +119,7 @@ def main():
     # startDate = datetime.datetime(2000, 1, 1, 0, 0)
     # generateAudioForNextDays(datetime.datetime.now(),366)
     # generateOnlyYears(10)
-    generateOtherAudioFiles()
+    # generateOtherAudioFiles()
+    generateAudioForWeekdays()
 
 main()
