@@ -36,7 +36,7 @@ def totalBookOnDate(bookDate):
 def allAptsOnDate(bookDate,obfuscate=False):
     #phoneData = Query()
     totalBookings = phoneDB.search(where('bookDate') == bookDate)
-    booking_data = ''
+    booking_data = 'date: ' + bookDate + '\n'
     totalBookings_sorted = sorted(totalBookings, key=lambda k: int(k['tokenNum'])) 
     for i in totalBookings:
         if obfuscate:
@@ -63,8 +63,8 @@ def cancelBooking(phoneNum):
     phoneDB.remove(where('phoneNum') == phoneNum)
 
 def removeStaleBooking(staleDate):
-    phoneData = Query()
-    phoneDB.remove(phoneData.bookDate == staleDate)
+    phoneDB.remove(where('bookDate') == staleDate)
+    phoneDB.remove(where('tokenDate') == staleDate)
 
 
 def addHoliday(newDate):

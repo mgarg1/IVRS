@@ -12,12 +12,17 @@
 
 ## TODO - Enhancement
 - [ ] Automate - keep checking if call is active
-- [ ] URI based holiday update
 - [ ] Sending message to WhatsApp - https://llamalab.com/automate/community/flows/8315
 - [ ] Callback functionality
 - [ ] remove pastebin flow - instead pdf download
+- [ ] accept date in multiple format
+- [ ] add holiday from REST API
+- [ ] start the linux flask app automatically
+- [ ] cold period (not to accept any reservation) - can be used for cleanup
+- [ ] backup automate app flows
+- [ ] remove DTMF encoder hardware
 
-## Linux DTMF Setup
+## Linux DTMF Experiment
 ```bash
 apt-get install multimon-ng
 multimon-ng -t wav -a DTMF other/audiocheck.net_dtmf_112163_112196_11#9632_##9696.wav 
@@ -33,6 +38,8 @@ https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with
 * http://<hostname:port>/kilall
 * http://<hostname:port>/cmd/pub
 * http://<hostname:port>/cmd/pub/17-March-2021
+* http://<hostname:port>/cmd/hol
+* http://<hostname:port>/cmd/hol/09-March-2021
 
 ## Imp Links:
 * https://components101.com/modules/mt8870-dtmf-decoder-module

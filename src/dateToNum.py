@@ -5,7 +5,8 @@ import threading,time,os,signal,subprocess
 from ivrs_utils import killtree
 from constants import WEEKDAYS_HINDI
 
-rootPath = os.path.join(os.getcwd(),'..')
+rootPath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# rootPath = os.path.join(os.getcwd(),'..')
 audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
 audioRecordingshindiNumbersPath = os.path.join(audioRecordingsPath,'hindidates')
 

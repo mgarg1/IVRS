@@ -25,8 +25,8 @@ def prepareMsg(msg):
         print('WRONG MESSAGE TYPE')
         return 'INVALID MESSAGE'
 
-    if msg.find('exitState'):
-        msg.replace('exitState','')
+    if msg.find('exitState:'):
+        msg = msg.replace('exitState:','')
     return msg
         
 

@@ -97,7 +97,7 @@ class talkState(State):
         registerCallback(phoneNum)
         self.audioList = [key2file('callback')]
         self.speak()
-        resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge'
+        resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge. callback_registered'
         atm.state = exitState(resMsg)
     
     def press1(self, atm):
