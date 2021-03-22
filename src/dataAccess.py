@@ -1,8 +1,8 @@
 from datetime import datetime,timedelta
 from tinydb import TinyDB, Query,where
 import constants
-phoneDB = TinyDB('phoneDB.json')
-HOLIDAY_FILE = 'holidayDB.txt'
+
+phoneDB = TinyDB(constants.PHONE_DB_FILE)
 
 def isNumRegistered(phoneNum):
     records = phoneDB.search(where('phoneNum') == phoneNum)
@@ -14,7 +14,7 @@ def isNumRegistered(phoneNum):
 def findNextDates(numOfDays=5,today=datetime.now()):
     days = []
     currDelta = 1
-    holiday_list = open(HOLIDAY_FILE).readlines()
+    holiday_list = open(constants.HOLIDAY_DB_FILE).readlines()
     holiday_list = [i.strip() for i in holiday_list]
     print(holiday_list)
 
@@ -70,7 +70,7 @@ def removeStaleBooking(staleDate):
 def addHoliday(newDate):
     # thisDay.strftime("%d-%B-%Y")
     # Always use date in this format 22-12-2012, 02-01-2012 
-    with open(HOLIDAY_FILE, 'a') as file:
+    with open(constants.HOLIDAY_DB_FILE, 'a') as file:
         file.write(newDate)
 
 

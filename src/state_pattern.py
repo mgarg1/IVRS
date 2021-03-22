@@ -191,7 +191,7 @@ class confirmState(State):
         tokenNum = storeBooking(atm.phoneNum, self.bookDate)
         self.audioList = [key2file('booked')]
         self.speak()
-        resStr = 'Appointment confirmed!! Date - ' + self.bookDate + ' , Token number - ' + tokenNum + ' -Mayuri Hospital'
+        resStr = 'Appointment confirmed!! \nDate - ' + self.bookDate + ' , \nToken number - ' + tokenNum + ' \n-Mayuri Hospital'
         atm.state = exitState(resStr)
 
     def press2(self, atm):
@@ -215,7 +215,7 @@ class alreadyState(State):
         cancelBooking(atm.phoneNum)
         self.audioList = [key2file('cancelled')]
         self.speak()
-        resStr='Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai - Mayuri Hospital'
+        resStr='Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai \n- Mayuri Hospital'
         atm.state = exitState(resStr)
 
     def press9(self,atm):

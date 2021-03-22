@@ -9,3 +9,5 @@ gTTS
 RPi.GPIO
 dbus-python
 vlc-ctrl
+requests
+singleton-decorator

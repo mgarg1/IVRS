@@ -4,7 +4,7 @@ import sys,re,requests,subprocess,datetime
 from ivrs_utils import killtree
 from state_pattern import main4
 from dtmf_decoder3 import gpio_initialize,gpio_clean
-from dataAccess import allAptsOnDate
+from dataAccess import allAptsOnDate,removeStaleBooking,addHoliday
 import constants
 from sensitive import PASTEBIN_API_KEY
 
@@ -25,10 +25,11 @@ def prepareMsg(msg):
         print('WRONG MESSAGE TYPE')
         return 'INVALID MESSAGE'
 
-    if msg.find('exitState:'):
-        msg = msg.replace('exitState:','')
-    return msg
-        
+    return msg.replace('exitState:','')
+
+@app.route('/check_server', methods=['GET','POST'])
+def check_server():
+    return 'server is up',200
 
 @app.route('/phoneNum/<string:phoneNum>', methods=['GET','POST'])
 def show_post(phoneNum):
@@ -84,13 +85,34 @@ def publish_list(dateOfApt=datetime.datetime.now().strftime(constants.DATE_FORMA
         print('no apt')
         return 'No appointments for this date',200
 
+@app.route('/cmd/REM/', methods=['GET','POST'])
+@app.route('/cmd/REM/<string:oldDate>', methods=['GET','POST'])
+def remove_db_entries(oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)):
+    print('----- removing entries from DB ----')
+    try:
+        datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
+    except ValueError:
+        return "Error:Incorrect data format, should be DD-Month-YYYY",200
+    
+    removeStaleBooking(oldDate)
+    return 'Success',400
+
+@app.route('/cmd/HOL/', methods=['GET','POST'])
+@app.route('/cmd/HOL/<string:oldDate>', methods=['GET','POST'])
+def add_holiday(oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)):
+    print('----- removing entries from DB ----')
+    try:
+        datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
+    except ValueError:
+        return "Error:Incorrect data format, should be DD-Month-YYYY",200
+    addHoliday(oldDate)
+    return 'Success',400
 
 @app.route('/kilall', methods=['GET','POST'])
 def kill_all_process():
     print('----- Killing All processes ----')
     myAppCtx['keepAlive'] = False
     return 'Success',400
-
 
 @app.route('/', methods=['GET'])
 def default_route():

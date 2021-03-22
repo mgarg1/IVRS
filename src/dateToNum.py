@@ -3,11 +3,9 @@ from sys import platform
 from multiprocessing import Process, Value, Array
 import threading,time,os,signal,subprocess
 from ivrs_utils import killtree
-from constants import WEEKDAYS_HINDI
+import constants
 
-rootPath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# rootPath = os.path.join(os.getcwd(),'..')
-audioRecordingsPath = os.path.join(rootPath,'audioRecordings')
+audioRecordingsPath = os.path.join(constants.ROOTPATH,'audioRecordings')
 audioRecordingshindiNumbersPath = os.path.join(audioRecordingsPath,'hindidates')
 
 fileKeyMapping = {'welcomeState1':'welcomeStateMsg.mp4',
@@ -115,7 +113,7 @@ def date2audioFiles(bookDate,includeYear=False,includeDayOfWeek=False):
     
     if includeDayOfWeek:
         #TODO: use key to file mapping for weekdays
-        week_filename = WEEKDAYS_HINDI[datetime_obj.weekday()] + '.mp4'
+        week_filename = constants.WEEKDAYS_HINDI[datetime_obj.weekday()] + '.mp4'
         week_filename = key2fileWithoutMap(week_filename)
         dateFileList = [week_filename] + dateFileList
 

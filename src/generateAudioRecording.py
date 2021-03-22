@@ -84,8 +84,11 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं . किसी हॉस्पिटल कर्मचारी से बात करने के लिए दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('welcomeState1'))
 
-    audioObj = gTTS(text='आगे उपलब्ध आठ तारीखों में से एक का चुनाव करें', lang='hi', slow=False) 
-    audioObj.save(key2file('bookInstr'))
+    audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं', lang='hi', slow=False) 
+    audioObj.save(key2file('welcomeState1'))
+
+    # audioObj = gTTS(text='आगे उपलब्ध आठ तारीखों में से एक का चुनाव करें', lang='hi', slow=False) 
+    # audioObj.save(key2file('bookInstr'))
 
     # audioObj = gTTS(text='आपने चुना है', lang='hi', slow=False) 
     # audioObj.save(key2file('confirmState1'))
@@ -119,7 +122,7 @@ def main():
     # startDate = datetime.datetime(2000, 1, 1, 0, 0)
     # generateAudioForNextDays(datetime.datetime.now(),366)
     # generateOnlyYears(10)
-    # generateOtherAudioFiles()
-    generateAudioForWeekdays()
+    generateOtherAudioFiles()
+    # generateAudioForWeekdays()
 
 main()
