@@ -1,5 +1,6 @@
 venv/
 *.swp
+*.pyc
 __pycache__/
 src/sensitive.py
 src/phoneDB.json

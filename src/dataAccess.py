@@ -33,7 +33,7 @@ def totalBookOnDate(bookDate):
     #phoneData = Query()
     return phoneDB.count(where('bookDate') == bookDate)
 
-def allAptsOnDate(bookDate,obfuscate=False):
+def allAptsOnDate(bookDate,obfuscate=True):
     #phoneData = Query()
     totalBookings = phoneDB.search(where('bookDate') == bookDate)
     booking_data = 'date: ' + bookDate + '\n'

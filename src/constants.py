@@ -7,4 +7,5 @@ WEEKDAYS_HINDI = ["Somvar","Mangalvar","Budhvar","Guruvar","Shukrvar","Shanivar"
 
 ROOTPATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PHONE_DB_FILE = os.path.join(ROOTPATH,'src','phoneDB.json')
-HOLIDAY_DB_FILE = os.path.join(ROOTPATH,'src','holidayDB.txt') 
+HOLIDAY_DB_FILE = os.path.join(ROOTPATH,'src','holidayDB.txt')
+ARCHIVE_DB_FILE = os.path.join(ROOTPATH,'src','archiveDB.txt')

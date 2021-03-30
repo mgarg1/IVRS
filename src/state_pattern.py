@@ -328,8 +328,8 @@ def main4(phoneNum,appCtx):
        pass
 
     print('Main Process ended')
-    del atm
     destroyAll()
+    del atm
     global retVal
     print('\nMain EXITED\n')
     return retVal

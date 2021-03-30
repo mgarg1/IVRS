@@ -17,10 +17,14 @@
 - [ ] remove pastebin flow - instead pdf download
 - [ ] accept date in multiple format
 - [ ] add holiday from REST API
-- [ ] start the linux flask app automatically
+- [ ] start the linux flask app automatically 
+```bash
+lxterminal --working-directory="/home/pi/IVRS" -e "bash -c \"source /home/pi/IVRS/venv/bin/activate;python src/app.py \""
+```
 - [ ] cold period (not to accept any reservation) - can be used for cleanup
 - [ ] backup automate app flows
 - [ ] remove DTMF encoder hardware
+- 
 
 ## Linux DTMF Experiment
 ```bash
@@ -28,6 +32,7 @@ apt-get install multimon-ng
 multimon-ng -t wav -a DTMF other/audiocheck.net_dtmf_112163_112196_11#9632_##9696.wav 
 https://www.reddit.com/r/amateurradio/comments/f0wmux/could_use_some_help_with_multimonng_for_decoding/
 https://cloudacm.com/?p=3197
+https://www.thegeekstuff.com/2009/05/sound-exchange-sox-15-examples-to-manipulate-audio-files/
 sox -b 16 -e signed-integer -r 22k -c 1 -d -t wavpcm -| multimon-ng -c -a dtmf -
 # record audio in python:
 https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone
@@ -51,7 +56,13 @@ sox -b 16 -e signed-integer -c 1 -d -t wavpcm tt.wav
 # https://gist.github.com/dideler/85de4d64f66c1966788c1b2304b9caf1
 # https://www.freecodecamp.org/news/telegram-push-notifications-58477e71b2c2/
 
-
+# **** V.V. IMP **** Just to be sure you have update send a 'hi' message first
+curl https://api.telegram.org/bot{botID}:{API_key}/getUpdates
+# obtain chat Id from the output of prev command
+curl -X POST \
+     -H 'Content-Type: application/json' \
+     -d '{"chat_id": "{chatId from prev step}", "text": "This is a test from curl", "disable_notification": true}' \
+     https://api.telegram.org/bot{botID}:{API_key}/sendMessage
 ```
 ## Supported REST Commands
 * http://<hostname:port>/phoneNum/9876543210

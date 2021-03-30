@@ -1,7 +1,7 @@
 #!flask/bin/python
 from flask import Flask
 import sys,re,requests,subprocess,datetime
-from ivrs_utils import killtree
+from ivrs_utils import killtree,sendMessageToTelegram,postMessageToPasteBin
 from state_pattern import main4
 from dtmf_decoder3 import gpio_initialize,gpio_clean
 from dataAccess import allAptsOnDate,removeStaleBooking,addHoliday
@@ -56,26 +56,26 @@ def show_post(phoneNum):
 
 @app.route('/cmd/PUB/', methods=['GET','POST'])
 @app.route('/cmd/PUB/<string:dateOfApt>', methods=['GET','POST'])
-def publish_list(dateOfApt=datetime.datetime.now().strftime(constants.DATE_FORMAT)):
-    try:
-        datetime.datetime.strptime(dateOfApt, constants.DATE_FORMAT)
-    except ValueError:
-        return "Error:Incorrect data format, should be DD-Month-YYYY",200
-    
+def publish_list(dateOfApt=None):
+    if dateOfApt == None:
+        dateOfApt=datetime.datetime.now().strftime(constants.DATE_FORMAT)
+    else:
+        try:
+            datetime.datetime.strptime(dateOfApt, constants.DATE_FORMAT)
+        except ValueError:
+            return "Error:Incorrect data format, should be DD-Month-YYYY",200
+        
     apt_data_text = allAptsOnDate(dateOfApt)
     print('appointment data -> ' + apt_data_text)
     if apt_data_text and apt_data_text != '':
-        # curl -X POST -d 'api_dev_key=PASTEBIN_API_KEY' -d 'api_paste_code=test' -d 'api_option=paste' "https://pastebin.com/api/api_post.php"
-        url = 'https://pastebin.com/api/api_post.php'
-        payload = {
-            "api_dev_key":PASTEBIN_API_KEY,
-            "api_paste_code":apt_data_text,
-            "api_option":"paste",
-            "api_paste_expire_date":"1D"}
+        r = sendMessageToTelegram(apt_data_text)
+        if r.status_code == requests.codes.ok:
+            return 'pls visit ' + r.text,400
         
-        # headers = {"Content-Type": "application/json; charset=utf8"}
-        # r = requests.post(url,headers=headers, data=payload)
-        r = requests.post(url, data=payload)
+        print('Error in posting to Telegram, trying SMS instead')
+        
+        r = postMessageToPasteBin(apt_data_text)
+        
         if r.status_code == requests.codes.ok:
             return 'pls visit ' + r.text,200
         else:
@@ -87,24 +87,31 @@ def publish_list(dateOfApt=datetime.datetime.now().strftime(constants.DATE_FORMA
 
 @app.route('/cmd/REM/', methods=['GET','POST'])
 @app.route('/cmd/REM/<string:oldDate>', methods=['GET','POST'])
-def remove_db_entries(oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)):
+def remove_db_entries(oldDate=None):
     print('----- removing entries from DB ----')
-    try:
-        datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
-    except ValueError:
-        return "Error:Incorrect data format, should be DD-Month-YYYY",200
+    if oldDate == None:
+        oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
+    else:
+        try:
+            datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
+        except ValueError:
+            return "Error:Incorrect data format, should be DD-Month-YYYY",200
     
     removeStaleBooking(oldDate)
     return 'Success',400
 
 @app.route('/cmd/HOL/', methods=['GET','POST'])
 @app.route('/cmd/HOL/<string:oldDate>', methods=['GET','POST'])
-def add_holiday(oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)):
+def add_holiday(oldDate=None):
     print('----- removing entries from DB ----')
-    try:
-        datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
-    except ValueError:
-        return "Error:Incorrect data format, should be DD-Month-YYYY",200
+    if oldDate == None:
+        oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
+    else:    
+        try:
+            datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
+        except ValueError:
+            return "Error:Incorrect data format, should be DD-Month-YYYY",200
+    
     addHoliday(oldDate)
     return 'Success',400
 
