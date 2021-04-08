@@ -1,7 +1,8 @@
 import os
 
 DATE_FORMAT = '%d-%B-%Y'
-BOOK_LIMIT = 20
+BOOK_LIMIT = 30
+START_TOKEN_NUM = 11
 
 WEEKDAYS_HINDI = ["Somvar","Mangalvar","Budhvar","Guruvar","Shukrvar","Shanivar","Ravivar"]
 
