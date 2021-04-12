@@ -24,7 +24,10 @@ lxterminal --working-directory="/home/pi/IVRS" -e "bash -c \"source /home/pi/IVR
 - [ ] cold period (not to accept any reservation) - can be used for cleanup
 - [ ] backup automate app flows
 - [ ] remove DTMF encoder hardware
-- 
+
+## TODO - BUGS
+- [ ] while removing the stale entries from the DB make a backup to central server
+- [ ] when making a holiday - send sms to all members that your reservation is cancelled pls book again for another appointment
 
 ## Linux DTMF Experiment
 ```bash

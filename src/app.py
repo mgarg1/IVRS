@@ -7,6 +7,8 @@ from dtmf_decoder3 import gpio_initialize,gpio_clean
 from dataAccess import allAptsOnDate,removeStaleBooking,addHoliday
 import constants
 from sensitive import PASTEBIN_API_KEY
+import logging
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 sys.tracebacklimit = 0
 # Path to a Python interpreter that runs any Python script
@@ -101,18 +103,18 @@ def remove_db_entries(oldDate=None):
     return 'Success',400
 
 @app.route('/cmd/HOL/', methods=['GET','POST'])
-@app.route('/cmd/HOL/<string:oldDate>', methods=['GET','POST'])
-def add_holiday(oldDate=None):
-    print('----- removing entries from DB ----')
-    if oldDate == None:
-        oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
+@app.route('/cmd/HOL/<string:holDate>', methods=['GET','POST'])
+def add_holiday(holDate=None):
+    print('----- adding holiday to DB ----')
+    if holDate == None:
+        holDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
     else:    
         try:
-            datetime.datetime.strptime(oldDate, constants.DATE_FORMAT)
+            datetime.datetime.strptime(holDate, constants.DATE_FORMAT)
         except ValueError:
             return "Error:Incorrect data format, should be DD-Month-YYYY",200
     
-    addHoliday(oldDate)
+    addHoliday(holDate)
     return 'Success',400
 
 @app.route('/kilall', methods=['GET','POST'])

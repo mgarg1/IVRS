@@ -1,6 +1,7 @@
 from datetime import datetime,timedelta
 from tinydb import TinyDB, Query,where
 import constants
+import logging
 
 phoneDB = TinyDB(constants.PHONE_DB_FILE)
 
@@ -11,15 +12,21 @@ def isNumRegistered(phoneNum):
     else:
         return False
 
-def findNextDates(numOfDays=5,today=datetime.now()):
-    days = []
-    currDelta = 1
+
+def findNextDates(numOfDays=5,startDate=None):
+    currDelta = 0 # Accept today's reservation
     holiday_list = open(constants.HOLIDAY_DB_FILE).readlines()
     holiday_list = [i.strip() for i in holiday_list]
-    print(holiday_list)
+    logging.debug(holiday_list)
 
+    if not startDate:
+        startDate = datetime.now()
+        if startDate.hour > 11: # If calling after 11 am then you will get tomorrow's number
+            currDelta = 1
+
+    days = []
     while len(days) < numOfDays:
-        thisDay = today+timedelta(days=currDelta)
+        thisDay = startDate+timedelta(days=currDelta)
         thisDay_str = thisDay.strftime(constants.DATE_FORMAT)
         
         # This day is NOT thursday AND This day is not a holiday AND Num of Apts is less than constants.BOOK_LIMIT 

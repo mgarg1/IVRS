@@ -13,11 +13,19 @@ def killtree(pid, including_parent=True):
     if including_parent:
         parent.kill()
 
-def sendMessageToTelegram(outMsg,recepient=sensitive.TELEGRAM_GROUP_CHATID):
+def sendMessageToTelegram(outMsg,recepient=sensitive.TELEGRAM_GROUP_CHATID,disable_notification='true'):
     url = 'https://api.telegram.org/bot%s:%s/sendMessage' % (sensitive.TELEGRAM_BOT_ID,sensitive.TELEGRAM_AUTH_TOKEN)
-    payload = '{"chat_id": "%s", "text": "%s", "disable_notification": true}' % (recepient,outMsg)
+    payload = '{"chat_id": "%s", "text": "%s", "disable_notification": %s}' % (recepient,outMsg,disable_notification)
     headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
     return requests.post(url, data=payload, headers=headers)
+
+def getUpdatesFromTelegram():
+    # curl https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getUpdates 
+    url = 'https://api.telegram.org/bot%s:%s/getUpdates' % (sensitive.TELEGRAM_BOT_ID,sensitive.TELEGRAM_AUTH_TOKEN)
+    # payload = '{"chat_id": "%s", "text": "%s", "disable_notification": true}' % (recepient,outMsg)
+    headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    return requests.post(url, headers=headers)
+
 
 def postMessageToPasteBin(outMsg):
     url = 'https://pastebin.com/api/api_post.php'
