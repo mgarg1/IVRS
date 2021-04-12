@@ -56,8 +56,8 @@ def allAptsOnDate(bookDate,obfuscate=True):
 
 def storeBooking(phoneNum,bookDate):
     thisToken = phoneDB.search(where('tokenDate') == bookDate)
-    print(thisToken)
-    maxToken = 1
+    # print(thisToken)
+    maxToken = constants.START_TOKEN_NUM
     if thisToken:
         maxToken = int(thisToken[0]['maxTokenNum']) + 2
     #update the maxToken Entry
