@@ -24,7 +24,7 @@ myAppCtx={'keepAlive':True}
 
 def prepareMsg(msg):
     if type(msg) != str:
-        print('WRONG MESSAGE TYPE')
+        logging.error('WRONG MESSAGE TYPE')
         return 'INVALID MESSAGE'
 
     return msg.replace('exitState:','')
@@ -41,19 +41,19 @@ def show_post(phoneNum):
     myAppCtx['keepAlive'] = True
     phoneNum  = str(phoneNum)
     phoneNum2  = phoneNum[-10:] #last 10 digits
-    allMatch  = re.findall("\d{10}", phoneNum2)
+    # allMatch  = re.findall(r"\d{10}", phoneNum2)
 
-    print('PhoneNum - ' + phoneNum + ' & PhoneNum2 - ' + phoneNum2)
+    logging.info('PhoneNum - %s & PhoneNum2 - %s' + phoneNum,phoneNum2)
     retVal='Nothing returned from main'
     #The try block does not raise any errors, so the else block is executed:
     try:
         retVal = main4(phoneNum2,myAppCtx)
     except Exception as ExceptionStr:
-        print(ExceptionStr)
+        logging.error(ExceptionStr)
     finally:
         gpio_clean()
-    
-    print('no Exception Raised\n')
+
+    logging.info('no Exception Raised')
     return prepareMsg(retVal),200
 
 @app.route('/cmd/PUB/', methods=['GET','POST'])
@@ -68,29 +68,29 @@ def publish_list(dateOfApt=None):
             return "Error:Incorrect data format, should be DD-Month-YYYY",200
         
     apt_data_text = allAptsOnDate(dateOfApt)
-    print('appointment data -> ' + apt_data_text)
+    logging.info('appointment data -> %s', apt_data_text)
     if apt_data_text and apt_data_text != '':
         r = sendMessageToTelegram(apt_data_text)
-        if r.status_code == requests.codes.ok:
+        if r.status_code == 200:
             return 'pls visit ' + r.text,400
         
-        print('Error in posting to Telegram, trying SMS instead')
+        logging.error('Error in posting to Telegram, trying SMS instead')
         
         r = postMessageToPasteBin(apt_data_text)
         
-        if r.status_code == requests.codes.ok:
+        if r.status_code == 200:
             return 'pls visit ' + r.text,200
         else:
-            print(r.text)
+            logging.error(r.text)
             return 'Error:error in posting to pastebin',200
     else:
-        print('no apt')
+        logging.info('No appointments for this date')
         return 'No appointments for this date',200
 
 @app.route('/cmd/REM/', methods=['GET','POST'])
 @app.route('/cmd/REM/<string:oldDate>', methods=['GET','POST'])
 def remove_db_entries(oldDate=None):
-    print('----- removing entries from DB ----')
+    logging.info('----- removing entries from DB ----')
     if oldDate == None:
         oldDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
     else:
@@ -105,10 +105,10 @@ def remove_db_entries(oldDate=None):
 @app.route('/cmd/HOL/', methods=['GET','POST'])
 @app.route('/cmd/HOL/<string:holDate>', methods=['GET','POST'])
 def add_holiday(holDate=None):
-    print('----- adding holiday to DB ----')
+    logging.info('----- adding holiday to DB ----')
     if holDate == None:
         holDate=datetime.datetime.now().strftime(constants.DATE_FORMAT)
-    else:    
+    else:
         try:
             datetime.datetime.strptime(holDate, constants.DATE_FORMAT)
         except ValueError:
@@ -119,14 +119,15 @@ def add_holiday(holDate=None):
 
 @app.route('/kilall', methods=['GET','POST'])
 def kill_all_process():
-    print('----- Killing All processes ----')
+    
+    logging.info('----- Killing All processes ----')
     myAppCtx['keepAlive'] = False
     return 'Success',400
 
 @app.route('/', methods=['GET'])
 def default_route():
     # show the post with the given id, the id is an integer
-    print('invalid url')
+    logging.warn('invalid url')
     return 'hello'
 
 if __name__ == '__main__':

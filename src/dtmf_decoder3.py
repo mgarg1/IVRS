@@ -21,4 +21,7 @@ def register_callback(callback_rt):
 
 def gpio_clean():
     # GPIO.remove_event_detect(SDT)
-    GPIO.cleanup()
+    try:
+        GPIO.cleanup()
+    except RuntimeWarning:
+        pass

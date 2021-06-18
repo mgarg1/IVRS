@@ -31,6 +31,9 @@ from threading import Timer,Thread
 
 
 class State(object,metaclass = abc.ABCMeta):
+    stateMessage = None
+    audioList = []
+    
     @abc.abstractmethod
     def press1(self, atm):
         self.wrongInput(atm)
@@ -58,7 +61,7 @@ class State(object,metaclass = abc.ABCMeta):
         self.wrongInput(atm)
  
     def press9(self, atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
 
     def press0(self, atm):
         self.wrongInput(atm)
@@ -97,8 +100,8 @@ class talkState(State):
         registerCallback(phoneNum)
         self.audioList = [key2file('callback')]
         self.speak()
-        resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge. callback_registered'
-        atm.state = exitState(resMsg)
+        # resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge. callback_registered'
+        # atm.state = exitState(resMsg)
     
     def press1(self, atm):
         pass
@@ -145,7 +148,7 @@ class bookState(State):
         self.checkKeyPress(8,atm)
 
     def press9(self,atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
 
 keepAlive=True
 retVal=None
@@ -198,7 +201,7 @@ class confirmState(State):
         atm.state = bookState()
 
     def press9(self,atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
 
 class alreadyState(State):
     def __init__(self,bookDate):
@@ -219,18 +222,18 @@ class alreadyState(State):
         atm.state = exitState(resStr)
 
     def press9(self,atm):
-        atm.state = talkState()
+        atm.state = talkState(atm.phoneNum)
 
 @singleton
 class ATM:
     def __init__(self,phoneNum='9876543210'):
-        if not re.search("^\d{10}$", phoneNum):
+        if not re.search(r"^\d{10}$", phoneNum):
             raise Exception('not a 10 digit number - ' + phoneNum)
         self.phoneNum = phoneNum        
         
 
     def reset(self,phoneNum):
-        if not re.search("^\d{10}$", phoneNum):
+        if not re.search(r"^\d{10}$", phoneNum):
             raise Exception('not a 10 digit number - ' + phoneNum)
         
         self.phoneNum = phoneNum
@@ -251,7 +254,7 @@ class ATM:
         print('recvd ' + selNum)
 
         funName = 'self.state.press' + str(selNum) + '(self)'
-        result = eval(funName)
+        eval(funName)
 
 
 # async def main2():

@@ -52,8 +52,12 @@ def getExternalCmd(filenames):
     return cmdToRun
 
 def playAllTracks(cmdToRun):
-    #TODO:try catch here
-    ret = subprocess.check_output(cmdToRun,shell=True)
+    ret = None
+    try:
+        ret = subprocess.check_output(cmdToRun,shell=True)
+    except subprocess.CalledProcessError as e:
+        print('exception in PlayAllTracks - ' + str(e))
+
     #ret = os.system(cmdToRun)
     print(ret == os.EX_OK)
 
