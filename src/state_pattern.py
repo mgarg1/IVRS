@@ -1,13 +1,17 @@
-import abc,os,signal
-from dataAccess import findNextDates,isNumRegistered,storeBooking,cancelBooking
-from dateToNum import date2audioFiles,startNonBlockingProcess,stopNonBlockingProcess,key2file,key2fileWithoutMap,waitForJoin
+import abc
+import os
+from dataAccess import findNextDates, isNumRegistered, storeBooking, cancelBooking
+from dateToNum import date2audioFiles, startNonBlockingProcess, stopNonBlockingProcess, key2file, key2fileWithoutMap, waitForJoin
 from phoneCmds import registerCallback
-from dtmf_decoder3 import gpio_initialize,read_dtmf,register_callback, gpio_clean
+from dtmf_decoder3 import gpio_initialize, read_dtmf, register_callback, gpio_clean
 from singleton_decorator import singleton
-import re,sys
+import re
+from threading import Timer
+
+import logging
+logger = logging.getLogger('rootLogger')
 
 # import asyncio
-from threading import Timer,Thread
 
 # class Timer:
     # def __init__(self, timeout, callback):
@@ -24,13 +28,13 @@ from threading import Timer,Thread
 
 # async def timeout_callback():
 #     await asyncio.sleep(0.1)
-#     print('echo! - timeout_callback called')
+#     logger.debug('echo! - timeout_callback called')
 
 # def timeout_callback():
-#     print('echo! - timeout_callback called')
+#     logger.debug('echo! - timeout_callback called')
 
 
-class State(object,metaclass = abc.ABCMeta):
+class State(object, metaclass = abc.ABCMeta):
     stateMessage = None
     audioList = []
     
@@ -67,25 +71,26 @@ class State(object,metaclass = abc.ABCMeta):
         self.wrongInput(atm)
 
     def wrongInput(self, atm):
-        print('You have entered a wrong option. Please retry\n')
+        logger.debug('You have entered a wrong option. Please retry\n')
         atm.state.speak()
         # raise NotImplementedError('')
 
     def speak(self):
-        print(self.stateMessage)
-        #print(self.audioList)
+        logger.debug(self.stateMessage)
+        #logger.debug(self.audioList)
         startNonBlockingProcess(self.audioList)
-        
+
+
 class welcomeState(State):
     def __init__(self):
         self.idleTime = 12.0
         self.stateMessage = 'welcome to IVRS: \n1-To Book\n2-To Talk\n'
-        # print('welcome to IVRS: \n1-To Book\n2-To Talk\n')
+        # logger.debug('welcome to IVRS: \n1-To Book\n2-To Talk\n')
         self.audioList = [key2file('welcomeState1')]
         self.speak()
 
     def press1(self, atm):
-        atm.state  = bookState()
+        atm.state = bookState()
 
     def press2(self, atm):
         atm.state = talkState(atm.phoneNum)
@@ -94,7 +99,7 @@ class welcomeState(State):
         atm.state = talkState(atm.phoneNum)
 
 class talkState(State):
-    def __init__(self,phoneNum):
+    def __init__(self, phoneNum):
         self.idleTime = 12.0
         self.stateMessage = 'Your callback is registered. You will get a callback soon'
         registerCallback(phoneNum)
@@ -152,12 +157,13 @@ class bookState(State):
 
 keepAlive=True
 retVal=None
+
 def commonExit(msg):
-    print('inside Common Exit',flush=True)
+    logger.debug('inside Common Exit')
     waitForJoin()
     # destroyAll()
     # # can write to someplace
-    print('pid - ' + str(os.getpid()))
+    logger.debug('pid - %s', str(os.getpid()))
     global retVal
     retVal=msg
     global keepAlive
@@ -166,22 +172,25 @@ def commonExit(msg):
     #raise SystemExit(msg)
     #raise Exception('exitState:' + resMsg)
     #exit(0)
-   
+
+
 class exitState(State):
-    def __init__(self,resMsg):
-        self.idleTime = 15.0
-        print('exitState:' + resMsg, flush=True)
+    idleTime = 15.0
+
+    def __init__(self, resMsg):
+        logger.debug('exitState: %s', resMsg)
         commonExit('exitState:' + resMsg)
 
-    def press1(self, atm):
+    def press1(self,  *unused):
         pass
-    def press2(self, atm):
+    def press2(self,  *unused):
         pass
 
 
 class confirmState(State):
+    idleTime = 15.0
+
     def __init__(self,bookDate):
-        self.idleTime = 15.0
         self.bookDate = bookDate
         self.stateMessage = f'''You have selected {bookDate}
         Confirm State\n1-To Confirm\n2-To Reselect
@@ -203,25 +212,27 @@ class confirmState(State):
     def press9(self,atm):
         atm.state = talkState(atm.phoneNum)
 
+
 class alreadyState(State):
-    def __init__(self,bookDate):
-        self.idleTime = 20.0
-        self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
+    idleTime = 20.0
+
+    def __init__(self, bookDate):
         self.existingBookingDate = bookDate
+        self.stateMessage = 'You are already Registered\n1-To Update\n2-To Cancel'
         self.audioList = [key2file('alreadyState1')] + date2audioFiles(self.existingBookingDate,includeYear=True,includeDayOfWeek=True) + [key2file('alreadyState2')]
         self.speak()
 
-    def press1(self,atm):
+    def press1(self, atm):
         atm.state = bookState()
 
-    def press2(self,atm):
+    def press2(self, atm):
         cancelBooking(atm.phoneNum)
         self.audioList = [key2file('cancelled')]
         self.speak()
-        resStr='Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai \n- Mayuri Hospital'
+        resStr = 'Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai \n- Mayuri Hospital'
         atm.state = exitState(resStr)
 
-    def press9(self,atm):
+    def press9(self, atm):
         atm.state = talkState(atm.phoneNum)
 
 @singleton
@@ -238,20 +249,20 @@ class ATM:
         
         self.phoneNum = phoneNum
         bookDate = isNumRegistered(phoneNum)
-        if bookDate == False:
+        if not bookDate:
             self.state = welcomeState()
         else:
             self.state = alreadyState(bookDate)
 
     def press(self,selNum):
         if not isinstance(selNum,str):
-            print('invalid Number - Not a string')
+            logger.error('invalid Number - Not a string')
         if len(selNum) != 1:
-            print('invalid selection - should be single char')
-        if not selNum in '0123456789#*':
-            print('invalid selection - Not a allowed char')
+            logger.error('invalid selection - should be single char')
+        if selNum not in '0123456789#*':
+            logger.error('invalid selection - Not a allowed char')
 
-        print('recvd ' + selNum)
+        logger.debug('recvd - %s',selNum)
 
         funName = 'self.state.press' + str(selNum) + '(self)'
         eval(funName)
@@ -274,7 +285,7 @@ def remindToPress(atmObj):
 
 def noResponseExit():
     startNonBlockingProcess([key2file('timeout')],True)
-    print('reached in noResponseExit',flush=True)
+    logger.debug('reached in noResponseExit')
     commonExit('no response exit')
     #os.kill(os.getpid(), signal.SIGTERM)
 
@@ -310,7 +321,10 @@ def destroyAll():
 def keyPressCallback(channel,atmObj):
     stop_Timer()
     keyPressed = read_dtmf()
-    atmObj.press(keyPressed)
+    if atmObj:
+        atmObj.press(keyPressed)
+    else:
+        logger.critical('invalid atmObj')
     init_Timer(atmObj.state.idleTime,atmObj)
 
 def main4(phoneNum,appCtx):
@@ -324,26 +338,27 @@ def main4(phoneNum,appCtx):
 
     init_Timer(atm.state.idleTime,atm)
     
-    callback_rt = lambda x:keyPressCallback(x,atm)
+    callback_rt = lambda x,atmObj=atm:keyPressCallback(x,atmObj)
     register_callback(callback_rt)
 
     while keepAlive and appCtx['keepAlive']:
        pass
 
-    print('Main Process ended')
+    logger.debug('Main Process ended')
     destroyAll()
     del atm
+    atm = None
     global retVal
-    print('\nMain EXITED\n')
+    logger.debug('\nMain EXITED\n')
     return retVal
 
 # def preMain():
 #     if len(sys.argv) != 2:
-#         print('invalid argument list')
+#         logger.debug('invalid argument list')
 #     else:
 #         phoneNum=str(sys.argv[1])
-#         print('phone num recvd -> ' + phoneNum)
-#         print('pid - ' + str(os.getpid()))
+#         logger.debug('phone num recvd -> ' + phoneNum)
+#         logger.debug('pid - ' + str(os.getpid()))
 #         main3(phoneNum)
 
 

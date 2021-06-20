@@ -1,6 +1,8 @@
 import psutil
 import sensitive
 import requests
+import logging
+logger = logging.getLogger('rootLogger')
 
 def killtree(pid, including_parent=True):
     parent = psutil.Process(pid)
