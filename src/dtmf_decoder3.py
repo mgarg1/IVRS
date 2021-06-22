@@ -9,6 +9,7 @@ INBITS = [Q1, Q2, Q3, Q4, SDT]
 
 
 def gpio_initialize():
+    logger.debug(' gpio_init called-*')
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(INBITS, GPIO.IN)
 
@@ -25,9 +26,12 @@ def read_dtmf():
 def register_callback(callback_rt):
     GPIO.add_event_detect(SDT, GPIO.RISING, callback=callback_rt, bouncetime=200)
 
+def remove_callback():
+    GPIO.remove_event_detect(SDT)
 
 def gpio_clean():
     # GPIO.remove_event_detect(SDT)
+    logger.debug(' gpio_clean called-*')
     try:
         GPIO.cleanup()
     except Exception as e:

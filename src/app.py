@@ -19,8 +19,6 @@ VENV_PYTHON = "../venv/bin/python"
 MAIN_SCRIPT = "state_pattern.py"
 
 app = Flask(__name__)
-gpio_initialize()
-
 myAppCtx = {'keepAlive': True}
 
 def prepareMsg(msg):
@@ -53,10 +51,9 @@ def show_post(phoneNum):
         logger.error('Exception in main4: %s', nm)
     except Exception as ExceptionStr:
         logger.error('Exception in main4:  %s',ExceptionStr)
-    finally:
-        gpio_clean()
-
-    logger.debug('no Exception Raised')
+    else:
+        logger.debug('no Exception Raised in main4')
+    
     return prepareMsg(retVal), 200
 
 @app.route('/cmd/PUB/', methods=['GET', 'POST'])
@@ -86,9 +83,8 @@ def publish_list(dateOfApt=None):
         
         logger.error(r.text)
         return 'Error:error in posting to pastebin',200
-    else:
-        logger.info('No appointments for this date')
-        return 'No appointments for this date',200
+    logger.info('No appointments for this date')
+    return 'No appointments for this date',200
 
 @app.route('/cmd/REM/', methods=['GET', 'POST'])
 @app.route('/cmd/REM/<string:oldDate>', methods=['GET', 'POST'])
@@ -122,7 +118,7 @@ def add_holiday(holDate=None):
 
 @app.route('/kilall', methods=['GET', 'POST'])
 def kill_all_process():
-    
+    global myAppCtx
     logger.critical('----- Killing All processes ----')
     myAppCtx['keepAlive'] = False
     return 'Success', 400
@@ -133,8 +129,13 @@ def default_route():
     logger.critical('invalid url')
     return 'hello'
 
+
 if __name__ == '__main__':
     # https://docs.python.org/3/library/logger.html#logrecord-attributes
     logging.basicConfig(filename='logging.conf', format='%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s', level=logging.DEBUG)
     # logger.fileConfig('./logging.conf')
-    app.run(debug=True, host='0.0.0.0', port=10100)
+    gpio_initialize()
+    try:
+        app.run(debug=True, host='0.0.0.0', port=10100)
+    finally:
+        gpio_clean()

@@ -3,7 +3,7 @@ import os
 from dataAccess import findNextDates, isNumRegistered, storeBooking, cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess, stopNonBlockingProcess, key2file, key2fileWithoutMap, waitForJoin
 from phoneCmds import registerCallback
-from dtmf_decoder3 import gpio_initialize, read_dtmf, register_callback, gpio_clean
+from dtmf_decoder3 import read_dtmf, register_callback, remove_callback
 from singleton_decorator import singleton
 import re
 from threading import Timer
@@ -14,17 +14,17 @@ logger = logging.getLogger('rootLogger')
 # import asyncio
 
 # class Timer:
-    # def __init__(self, timeout, callback):
-    #     self._timeout = timeout
-    #     self._callback = callback
-    #     self._task = asyncio.ensure_future(self._job())
+#     def __init__(self, timeout, callback):
+#         self._timeout = timeout
+#         self._callback = callback
+#         self._task = asyncio.ensure_future(self._job())
 
-    # async def _job(self):
-    #     await asyncio.sleep(self._timeout)
-    #     await self._callback()
+#     async def _job(self):
+#         await asyncio.sleep(self._timeout)
+#         await self._callback()
 
-    # def cancel(self):
-    #     self._task.cancel()
+#     def cancel(self):
+#         self._task.cancel()
 
 # async def timeout_callback():
 #     await asyncio.sleep(0.1)
@@ -121,7 +121,7 @@ class bookState(State):
         self.stateMessage = 'Booking State:\n'
         self.audioList = [key2file('bookInstr')]
         for x in range(0,len(self.availDates)):
-            self.stateMessage += f'Press ' + str(x+1) + ' for ' + self.availDates[x] + '\n'
+            self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
             self.audioList = self.audioList + self.createAudioList(str(x+1), self.availDates[x])
         self.speak()
 
@@ -155,8 +155,8 @@ class bookState(State):
     def press9(self,atm):
         atm.state = talkState(atm.phoneNum)
 
-keepAlive=True
-retVal=None
+
+keepAlive, retVal = True, None
 
 def commonExit(msg):
     logger.debug('inside Common Exit')
@@ -289,8 +289,8 @@ def noResponseExit():
     commonExit('no response exit')
     #os.kill(os.getpid(), signal.SIGTERM)
 
-timer1=None
-timer2=None
+
+timer1, timer2 = None, None
 
 def stop_Timer():
     global timer1
@@ -316,11 +316,12 @@ def init_Timer(idleTime,atmObj):
 def destroyAll():
     stopNonBlockingProcess()
     stop_Timer()
-    gpio_clean()
+    # gpio_clean()
 
 def keyPressCallback(channel,atmObj):
     stop_Timer()
     keyPressed = read_dtmf()
+    logger.debug('key pressed - %s',str(keyPressed))
     if atmObj:
         atmObj.press(keyPressed)
     else:
@@ -332,7 +333,7 @@ def main4(phoneNum,appCtx):
     # destroyAll()
     global keepAlive
     keepAlive = True
-    gpio_initialize()
+    # gpio_initialize()
     atm = ATM(phoneNum)
     atm.reset(phoneNum)
 
@@ -342,8 +343,9 @@ def main4(phoneNum,appCtx):
     register_callback(callback_rt)
 
     while keepAlive and appCtx['keepAlive']:
-       pass
+        pass
 
+    remove_callback()
     logger.debug('Main Process ended')
     destroyAll()
     del atm
@@ -360,5 +362,3 @@ def main4(phoneNum,appCtx):
 #         logger.debug('phone num recvd -> ' + phoneNum)
 #         logger.debug('pid - ' + str(os.getpid()))
 #         main3(phoneNum)
-
-
