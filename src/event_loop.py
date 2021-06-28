@@ -6,6 +6,14 @@ import datetime
 import constants
 import sensitive
 
+# we need this sensitive information in sensitive file
+# PASTEBIN_API_KEY
+# TELEGRAM_AUTH_TOKEN
+# TELEGRAM_BOT_ID
+# TELEGRAM_MOHIT_CHATID
+# TELEGRAM_AJAY_CHATID
+# TELEGRAM_GROUP_CHATID
+
 from dataAccess import removeStaleBooking,allAptsOnDate,addHoliday
 from ivrs_utils import sendMessageToTelegram,getUpdatesFromTelegram,checkIfSenderIsAllowed
 
