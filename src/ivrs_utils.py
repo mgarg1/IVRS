@@ -5,15 +5,22 @@ import logging
 logger = logging.getLogger('rootLogger')
 
 def killtree(pid, including_parent=True):
-    parent = psutil.Process(pid)
-    for child in parent.children(recursive=True):
-        print ("child", child)
-        childStatus = child.status()
-        if childStatus and childStatus != 'terminated':
-            child.kill()
+    try:
+        parent = psutil.Process(pid)
+        for child in parent.children(recursive=True):
+            print ("child", child)
+            childStatus = child.status()
+            if childStatus and childStatus != 'terminated':
+                child.kill()
 
-    if including_parent:
-        parent.kill()
+        if including_parent:
+            parent.kill()
+    
+    except psutil.NoSuchProcess:
+        logger.error('killtree - Process already dead')
+    except:
+        logger.error('killtree failed')
+
 
 def sendMessageToTelegram(outMsg,recepient=sensitive.TELEGRAM_GROUP_CHATID,disable_notification='true'):
     url = 'https://api.telegram.org/bot%s:%s/sendMessage' % (sensitive.TELEGRAM_BOT_ID,sensitive.TELEGRAM_AUTH_TOKEN)
@@ -21,9 +28,15 @@ def sendMessageToTelegram(outMsg,recepient=sensitive.TELEGRAM_GROUP_CHATID,disab
     headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
     return requests.post(url, data=payload, headers=headers)
 
-def getUpdatesFromTelegram():
-    # curl https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getUpdates 
-    url = 'https://api.telegram.org/bot%s:%s/getUpdates' % (sensitive.TELEGRAM_BOT_ID,sensitive.TELEGRAM_AUTH_TOKEN)
+def checkIfSenderIsAllowed(idOfSender):
+    return str(idOfSender) in [sensitive.TELEGRAM_MOHIT_CHATID]
+
+def getUpdatesFromTelegram(recevrId=sensitive.TELEGRAM_BOT_ID, offset=None):
+    # curl https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getUpdates?offset=343126593
+    offsetTxt = ''
+    if offset:
+        offsetTxt = '?offset=' + str(offset)
+    url = 'https://api.telegram.org/bot%s:%s/getUpdates%s' % (recevrId,sensitive.TELEGRAM_AUTH_TOKEN,offsetTxt)
     # payload = '{"chat_id": "%s", "text": "%s", "disable_notification": true}' % (recepient,outMsg)
     headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
     return requests.post(url, headers=headers)

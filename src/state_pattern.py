@@ -121,7 +121,7 @@ class bookState(State):
         self.stateMessage = 'Booking State:\n'
         self.audioList = [key2file('bookInstr')]
         for x in range(0,len(self.availDates)):
-            self.stateMessage += f'Press {str(x+1)} for {self.availDates[x]} \n'
+            self.stateMessage += f'Press ' + str(x+1) + ' for ' + self.availDates[x] + '\n'
             self.audioList = self.audioList + self.createAudioList(str(x+1), self.availDates[x])
         self.speak()
 

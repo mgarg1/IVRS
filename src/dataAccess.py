@@ -6,6 +6,7 @@ import logging
 logger = logging.getLogger('rootLogger')
 
 phoneDB = TinyDB(constants.PHONE_DB_FILE)
+archiveDB = TinyDB(constants.ARCHIVE_DB_FILE)
 
 def isNumRegistered(phoneNum):
     records = phoneDB.search(where('phoneNum') == phoneNum)
@@ -72,6 +73,9 @@ def cancelBooking(phoneNum):
     phoneDB.remove(where('phoneNum') == phoneNum)
 
 def removeStaleBooking(staleDate):
+    apt_data_text = allAptsOnDate(staleDate, False)
+    archiveDB.insert({staleDate : str(apt_data_text)})
+    
     phoneDB.remove(where('bookDate') == staleDate)
     phoneDB.remove(where('tokenDate') == staleDate)
 

@@ -7,7 +7,6 @@ from state_pattern import main4
 from dtmf_decoder3 import gpio_initialize, gpio_clean
 from dataAccess import allAptsOnDate, removeStaleBooking, addHoliday
 import constants
-from sensitive import PASTEBIN_API_KEY
 import logging
 logger = logging.getLogger('rootLogger')
 
@@ -137,5 +136,7 @@ if __name__ == '__main__':
     gpio_initialize()
     try:
         app.run(debug=True, host='0.0.0.0', port=10100)
+    except Exception as e:
+        print(e)
     finally:
         gpio_clean()

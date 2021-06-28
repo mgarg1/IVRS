@@ -6,8 +6,8 @@ import datetime
 import constants
 import sensitive
 
-# from dataAccess import removeStaleBooking,allAptsOnDate,addHoliday
-from ivrs_utils import sendMessageToTelegram,getUpdatesFromTelegram
+from dataAccess import removeStaleBooking,allAptsOnDate,addHoliday
+from ivrs_utils import sendMessageToTelegram,getUpdatesFromTelegram,checkIfSenderIsAllowed
 
 def removeOldBooking():
     todaysDate = datetime.datetime.now().strftime(constants.DATE_FORMAT)
@@ -18,62 +18,93 @@ def removeOldHolidays():
     pass
 
 def postDailyAptList():
-    todaysDate = datetime.datetime.now().strftime(constants.DATE_FORMAT)
-    apt_data_text = allAptsOnDate(todaysDate)
-    if apt_data_text and apt_data_text != '':
-        r = sendMessageToTelegram(apt_data_text,sensitive.TELEGRAM_GROUP_CHATID,'false')
+    pubCmd(sensitive.TELEGRAM_GROUP_CHATID, None)
 
-def readTelegramRequests():
-    reqs = getUpdatesFromTelegram()
-    reqs = reqs.json()['result']
-
-    for req in reqs:
-        sender=None
-        text_msg=None
+def convertReqs(msgs):
+    parsedLists = []
+    for req in msgs:
         try:
-            if req['message']['entities']['type'] == 'bot_command':
-                sender = req['message']['from']['id']
-                text_msg = req['message']['text']
-
+            # if req['message']['entities'][0]['type'] == 'bot_command':
+            sender = req['message']['from']['id']
+            text_msg = req['message']['text']
+            update_id = req['update_id']
         except KeyError:
             continue
-        
+
+        parsedLists.append({'sender': sender, 'msg': text_msg, 'update_id': update_id})
+
+    return parsedLists
+
+
+def checkValidDate(date_str):
+    try:
+        datetime.datetime.strptime(date_str, constants.DATE_FORMAT)
+    except (ValueError, TypeError):
+        return False
+    else:
+        return True
+
+
+# sendMessageToTelegram('invalid date format, should be DD-Month-YYYY',sender,'false')
+def pubCmd(senderId, date_arg):
+    if not checkValidDate(date_arg):
+        date_arg = datetime.datetime.now().strftime(constants.DATE_FORMAT)
+
+    apt_data_text = allAptsOnDate(date_arg)
+    if apt_data_text:
+        r = sendMessageToTelegram(apt_data_text,senderId,'false')
+    return r
+
+def holCmd(senderId, date_arg):
+    apt_data_text = ''
+    if checkValidDate(date_arg):
+        apt_data_text = allAptsOnDate(date_arg)
+        addHoliday(date_arg)
+
+        if apt_data_text:
+            apt_data_text = 'holiday added successfully, pls inform these apts:\n' + apt_data_text
+
+        r = sendMessageToTelegram(apt_data_text,senderId,'false')
+    else:
+        r = sendMessageToTelegram('date must for hol, should be in DD-Month-YYYY',senderId,'false')
+    return r
+
+
+LAST_UPDATE_ID = None
+
+def readTelegramRequests():
+    global LAST_UPDATE_ID
+    reqs = getUpdatesFromTelegram(offset=LAST_UPDATE_ID)
+    reqs = reqs.json()['result']
+    # "update_id":981483207,    
+
+    for req in convertReqs(reqs):
         # access list
-        if sender in [sensitive.TELEGRAM_MOHIT_CHATID]:
-            date_args=None
-            text_msg_split=text_msg.split()
-            if len(text_msg_split) == 1:
-                date_args=None
-            elif len(text_msg_split) == 2:
-                date_args=text_msg_split[1]
-            else:
-                continue
+        print('serving reqs')
+        if not checkIfSenderIsAllowed(req['sender']):
+            return
 
-            if date_args:
-                try:
-                    datetime.datetime.strptime(date_args, constants.DATE_FORMAT)
-                except ValueError:
-                    sendMessageToTelegram('invalid date format, should be DD-Month-YYYY',sender,'false')
+        text_msg_split=req['msg'].split()
+        cmdTxt = ''
+        if text_msg_split:
+            cmdTxt = text_msg_split[0]
 
-            if 'pub' in text_msg:
-                if not date_args:
-                    date_args = datetime.datetime.now().strftime(constants.DATE_FORMAT)
-                
-                apt_data_text = allAptsOnDate(date_args)
-                if apt_data_text and apt_data_text != '':
-                    r = sendMessageToTelegram(apt_data_text,sender,'false')
+        r = None
+        arg1 = None if len(text_msg_split) < 2 else text_msg_split[1]
+        # arg2 = None if len(text_msg_split) < 3 else text_msg_split[2]
 
-            # elif 'rem' in text_msg:
-            #     removeStaleBooking(date_args)
-            #     r = sendMessageToTelegram(apt_data_text,sender,'false')
+        if cmdTxt == '/pub':
+            r = pubCmd(sensitive.TELEGRAM_GROUP_CHATID, arg1)
+        elif cmdTxt == '/hol':
+            r = holCmd(req['sender'], arg1)
 
-            elif 'hol' in text_msg:
-                if date_args:
-                    apt_data_text = allAptsOnDate(date_args)
-                    addHoliday(date_args)
-                    r = sendMessageToTelegram('holiday added successfully, pls inform these apts : \n ' + str(apt_data_text),sender,'false')
-                else:    
-                    r = sendMessageToTelegram('date must for hol, should be in DD-Month-YYYY,sender,'false')
+        print('UPDATING UPDATE_ID\n\n')
+        LAST_UPDATE_ID = req['update_id'] + 1
+
+        # elif 'rem' in text_msg:
+        #   removeStaleBooking(date_args)
+        #   r = sendMessageToTelegram(apt_data_text,sender,'false')
+
 
 # schedule.every().hour.do(job)
 # schedule.every(5).to(10).minutes.do(job)
@@ -84,13 +115,14 @@ def readTelegramRequests():
 
 def main():
 
+    schedule.every(15).seconds.do(readTelegramRequests)
     schedule.every().day.at("09:00").do(postDailyAptList)
     schedule.every().day.at("23:30").do(removeOldBooking)
     schedule.every().day.at("23:35").do(removeOldHolidays)
-    # schedule.every(1).minutes.do(readTelegramRequests)
 
     while True:
         schedule.run_pending()
         time.sleep(1)
+
 
 main()
