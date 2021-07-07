@@ -13,14 +13,19 @@ def gpio_initialize():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(INBITS, GPIO.IN)
 
-
 def read_dtmf():
-    logger.debug('key pressed')
-    binStr = str(GPIO.input(Q4))+str(GPIO.input(Q3))+str(GPIO.input(Q2))+str(GPIO.input(Q1))
-    decNum = int(binStr, 2)
-    if decNum == 10:
-        decNum = 0
-    return str(decNum)
+    in3, in2, in1, in0 = GPIO.input(Q4), GPIO.input(Q3), GPIO.input(Q2), GPIO.input(Q1)
+    decNum = 0
+    decNum = decNum | ( in3 << 3) | ( in2 << 2) | ( in1 << 1) | ( in0 << 0)
+    strList = '01234567890*#'
+    # print('int key pressed - ' + str(decNum))
+    # if decNum >= 0 and decNum < len(strList):
+    
+    if 0 <= decNum < len(strList):
+        return strList[decNum]
+
+    logger.critical('invalid key pressed - %d',decNum)
+    return None
 
 
 def register_callback(callback_rt):

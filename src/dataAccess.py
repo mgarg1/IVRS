@@ -1,5 +1,5 @@
-from datetime import datetime,timedelta
-from tinydb import TinyDB, Query,where
+from datetime import datetime, timedelta
+from tinydb import TinyDB, where
 import constants
 import logging
 
@@ -12,15 +12,15 @@ def isNumRegistered(phoneNum):
     records = phoneDB.search(where('phoneNum') == phoneNum)
     if len(records) > 0:
         return records[0]['bookDate']
-    else:
-        return False
+    
+    return False
 
 
 def findNextDates(numOfDays=5,startDate=None):
     currDelta = 0 # Accept today's reservation
     holiday_list = open(constants.HOLIDAY_DB_FILE).readlines()
     holiday_list = [i.strip() for i in holiday_list]
-    logger.debug(holiday_list)
+    logger.debug('holiday list - %s',str(holiday_list))
 
     if not startDate:
         startDate = datetime.now()

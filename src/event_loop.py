@@ -66,7 +66,7 @@ def pubCmd(senderId, date_arg):
 def holCmd(senderId, date_arg):
     apt_data_text = ''
     if checkValidDate(date_arg):
-        apt_data_text = allAptsOnDate(date_arg)
+        apt_data_text = allAptsOnDate(date_arg,False)
         addHoliday(date_arg)
 
         if apt_data_text:
@@ -106,6 +106,10 @@ def readTelegramRequests():
         elif cmdTxt == '/hol':
             r = holCmd(req['sender'], arg1)
 
+        if r.status_code != 200:
+            print('request response isnt success\n')
+
+
         print('UPDATING UPDATE_ID\n\n')
         LAST_UPDATE_ID = req['update_id'] + 1
 
@@ -123,7 +127,7 @@ def readTelegramRequests():
 
 def main():
 
-    schedule.every(15).seconds.do(readTelegramRequests)
+    schedule.every(5).minutes.do(readTelegramRequests)
     schedule.every().day.at("09:00").do(postDailyAptList)
     schedule.every().day.at("23:30").do(removeOldBooking)
     schedule.every().day.at("23:35").do(removeOldHolidays)

@@ -18,8 +18,8 @@ def killtree(pid, including_parent=True):
     
     except psutil.NoSuchProcess:
         logger.error('killtree - Process already dead')
-    except:
-        logger.error('killtree failed')
+    except Exception as e:
+        logger.error('killtree failed coz of %s', str(e))
 
 
 def sendMessageToTelegram(outMsg,recepient=sensitive.TELEGRAM_GROUP_CHATID,disable_notification='true'):

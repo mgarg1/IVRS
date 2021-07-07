@@ -1,7 +1,7 @@
 import os
 from sys import platform
-from multiprocessing import Process, Value, Array
-import threading,time,os,signal,subprocess
+from multiprocessing import Process
+import subprocess
 from ivrs_utils import killtree
 import constants
 import logging
@@ -33,16 +33,16 @@ def key2fileWithoutMap(key):
     return os.path.join(audioRecordingsPath,'hindiaudio',key) 
 
 def getExternalCmd(filenames):
+    cmdToRun = None
     if not isinstance(filenames, list):
-       logger.debug('filenames should be a list returning')
-       return
+        logger.debug('filenames should be a list returning')
 
     for filename in filenames:
         if not os.path.isfile(filename):
-            logger.debug ("word File not exist - " + filename)
-            return
+            logger.debug ("word File not exist - %s",filename)
+            break
 
-    if platform == "linux" or platform == "linux2":
+    if platform in ["linux","linux2"]:
         filenames = ' '.join(filenames)
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
         cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
@@ -51,6 +51,7 @@ def getExternalCmd(filenames):
         filenames = ' '.join(filenames)
         cmdToRun = 'C:\\Program^ Files^ ^(x86)\\VideoLAN\\VLC\\vlc.exe %s --play-and-exit --no-osd' % (filenames)
         logger.debug(cmdToRun)
+
     return cmdToRun
 
 def playAllTracks(cmdToRun):
@@ -58,12 +59,14 @@ def playAllTracks(cmdToRun):
     try:
         ret = subprocess.check_output(cmdToRun,shell=True)
     except subprocess.CalledProcessError as e:
-        logger.debug('exception in PlayAllTracks - ' + str(e))
+        logger.debug('exception in PlayAllTracks - %s',str(e))
 
     #ret = os.system(cmdToRun)
     logger.debug(ret == os.EX_OK)
 
+
 currProcess = None
+
 def waitForJoin():
     global currProcess
     if currProcess and currProcess.is_alive():
@@ -75,18 +78,18 @@ def waitForJoin():
 def stopNonBlockingProcess():
     global currProcess
     if currProcess:
-        logger.debug('trying to terminate - ' + str(currProcess.pid))
+        logger.debug('trying to terminate - %s', str(currProcess.pid))
         #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
         if currProcess.is_alive():
             try:
                 subprocess.Popen(['vlc-ctrl',  'stop'])
             except Exception:
                 pass
-            logger.debug('terminating - ' + str(currProcess.pid))
+            logger.debug('terminating - %s', str(currProcess.pid))
             # currProcess.terminate()
             killtree(currProcess.pid)
     else:
-        logger.debug('invalid currProcess ' + str(currProcess))
+        logger.debug('invalid currProcess %s', str(currProcess))
 
 
 def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTracks):
@@ -98,7 +101,7 @@ def startNonBlockingProcess(filenames,isBlocking=False,targetProcess=playAllTrac
     #p.daemon = True
     p.start()
     currProcess = p
-    logger.debug('process in run:' + str(currProcess.pid))
+    logger.debug('process in run: %s',  str(currProcess.pid))
     if isBlocking:
         p.join()
 

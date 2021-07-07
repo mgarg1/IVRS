@@ -8,6 +8,8 @@ from dtmf_decoder3 import gpio_initialize, gpio_clean
 from dataAccess import allAptsOnDate, removeStaleBooking, addHoliday
 import constants
 import logging
+import logging.handlers
+
 logger = logging.getLogger('rootLogger')
 
 sys.tracebacklimit = 0
@@ -130,12 +132,19 @@ def default_route():
 
 
 if __name__ == '__main__':
+    LOG_FILENAME='logging.conf'
     # https://docs.python.org/3/library/logger.html#logrecord-attributes
-    logging.basicConfig(filename='logging.conf', format='%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=LOG_FILENAME, format='%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s', level=logging.DEBUG)
+    # Add the log message handler to the logger
+    
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1024*1024*50, backupCount=2) #50MB
+    logger.addHandler(handler)
+    # logger.setLevel(logging.DEBUG)
+
     # logger.fileConfig('./logging.conf')
     gpio_initialize()
     try:
-        app.run(debug=True, host='0.0.0.0', port=10100)
+        app.run(debug=True, host='0.0.0.0', port=10100, threaded=False, processes=1)
     except Exception as e:
         print(e)
     finally:

@@ -69,7 +69,13 @@ class State(object, metaclass = abc.ABCMeta):
 
     def press0(self, atm):
         self.wrongInput(atm)
+    
+    def pressStar(self, atm):
+        self.wrongInput(atm)
 
+    def pressHash(self, atm):
+        self.wrongInput(atm)
+    
     def wrongInput(self, atm):
         logger.debug('You have entered a wrong option. Please retry\n')
         atm.state.speak()
@@ -257,13 +263,22 @@ class ATM:
     def press(self,selNum):
         if not isinstance(selNum,str):
             logger.error('invalid Number - Not a string')
+            return
+
         if len(selNum) != 1:
             logger.error('invalid selection - should be single char')
+            return 
+        
         if selNum not in '0123456789#*':
             logger.error('invalid selection - Not a allowed char')
+            return
+
+        if selNum == '*':
+            selNum = 'Star'   
+        elif selNum == '#':
+            selNum = 'Hash'
 
         logger.debug('recvd - %s',selNum)
-
         funName = 'self.state.press' + str(selNum) + '(self)'
         eval(funName)
 
@@ -321,6 +336,9 @@ def destroyAll():
 def keyPressCallback(channel,atmObj):
     stop_Timer()
     keyPressed = read_dtmf()
+    if not keyPressed:    
+        return
+
     logger.debug('key pressed - %s',str(keyPressed))
     if atmObj:
         atmObj.press(keyPressed)
