@@ -2,7 +2,7 @@
 # https://sourceforge.net/p/raspberry-gpio-python/wiki/Inputs/
 import RPi.GPIO as GPIO
 
-Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
+Q1,Q2,Q3,Q4,SDT = 29,31,33,35,37
 INBITS = [Q1,Q2,Q3,Q4,SDT]
 
 GPIO.setmode(GPIO.BOARD)

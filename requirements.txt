@@ -11,3 +11,4 @@ dbus-python
 vlc-ctrl
 requests
 singleton-decorator
+python-telegram-bot

@@ -58,16 +58,28 @@ def allAptsOnDate(bookDate,obfuscate=True):
     return booking_data
 
 def storeBooking(phoneNum,bookDate):
+    # oldBookDate = isNumRegistered(phoneNum)
+    # check if the phone number is registered on the same date
+    records = phoneDB.search(where('phoneNum') == phoneNum)
+    if len(records) > 0 and records[0]['bookDate'] == bookDate:
+        return records[0]['tokenNum']
+
     thisToken = phoneDB.search(where('tokenDate') == bookDate)
     # print(thisToken)
-    maxToken = constants.START_TOKEN_NUM
+    newToken = None
     if thisToken:
-        maxToken = int(thisToken[0]['maxTokenNum']) + 2
+        maxToken = int(thisToken[0]['maxTokenNum'])
+        if maxToken > 39:
+            newToken = maxToken + 1
+        else:
+            newToken = maxToken + 2
+    else:
+        newToken = constants.START_TOKEN_NUM
     #update the maxToken Entry
-    phoneDB.upsert({'tokenDate': bookDate, 'maxTokenNum': str(maxToken)}, where('tokenDate') == bookDate)
+    phoneDB.upsert({'tokenDate': bookDate, 'maxTokenNum': str(newToken)}, where('tokenDate') == bookDate)
     # insert the new appointment
-    phoneDB.insert({'phoneNum': phoneNum, 'bookDate': bookDate, 'tokenNum': str(maxToken)})
-    return str(maxToken)
+    phoneDB.upsert({'phoneNum': phoneNum, 'bookDate': bookDate, 'tokenNum': str(newToken)}, where('phoneNum') == phoneNum)
+    return str(newToken)
 
 def cancelBooking(phoneNum):
     phoneDB.remove(where('phoneNum') == phoneNum)
