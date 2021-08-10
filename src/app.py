@@ -3,14 +3,29 @@ from flask import Flask
 import sys
 import datetime
 from ivrs_utils import sendMessageToTelegram, postMessageToPasteBin
-from state_pattern import main4
+from state_pattern import main4, SHM_NAME
 from dtmf_decoder3 import gpio_initialize, gpio_clean
 from dataAccess import allAptsOnDate, removeStaleBooking, addHoliday
 import constants
 import logging
 import logging.handlers
+from multiprocessing import shared_memory
 
 logger = logging.getLogger('rootLogger')
+
+print('Creating Shared Memory')
+shm_a = None
+try:
+    shm_a = shared_memory.SharedMemory(name=SHM_NAME,create=True, size=1)
+    # type(shm_a.buf)
+    buffer = shm_a.buf
+    # len(buffer)
+    buffer[0] = 255                           # Modify single byte at a time
+except Exception as e:
+    print('Exception while creating Shared Memory')
+    print(e)
+else:
+    print('Exception while creating Shared Memory - NO Exception')
 
 sys.tracebacklimit = 0
 # Path to a Python interpreter that runs any Python script
@@ -45,6 +60,14 @@ def show_post(phoneNum):
 
     logger.info('PhoneNum - %s & PhoneNum2 - %s', phoneNum, phoneNum2)
     retVal='Nothing returned from main'
+
+    shm_aa = shared_memory.SharedMemory(SHM_NAME)
+    buf2 = shm_aa.buf
+    buf2[0] = 255
+    # print(int(shm_b.buf[0])==0)
+    shm_aa.close()
+    
+
     #The try block does not raise any errors, so the else block is executed:
     try:
         retVal = main4(phoneNum2, myAppCtx)
@@ -122,6 +145,12 @@ def kill_all_process():
     global myAppCtx
     logger.critical('----- Killing All processes ----')
     myAppCtx['keepAlive'] = False
+     # Attach to an existing shared memory block
+    shm_c = shared_memory.SharedMemory(SHM_NAME)
+    buf1 = shm_c.buf
+    buf1[0] = 0
+    # print(int(shm_b.buf[0])==0)
+    shm_c.close()
     return 'Success', 400
 
 @app.route('/', methods=['GET'])
@@ -136,7 +165,6 @@ if __name__ == '__main__':
     # https://docs.python.org/3/library/logger.html#logrecord-attributes
     logging.basicConfig(filename=LOG_FILENAME, format='%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s', level=logging.DEBUG)
     # Add the log message handler to the logger
-    
     handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1024*1024*50, backupCount=2) #50MB
     logger.addHandler(handler)
     # logger.setLevel(logging.DEBUG)
@@ -149,3 +177,6 @@ if __name__ == '__main__':
         print(e)
     finally:
         gpio_clean()
+        if shm_a:
+            shm_a.close()
+            shm_a.unlink()

@@ -7,8 +7,8 @@ tinydb
 Werkzeug
 gTTS
 RPi.GPIO
-dbus-python
 vlc-ctrl
 requests
 singleton-decorator
 python-telegram-bot
+psutil

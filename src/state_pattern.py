@@ -7,9 +7,12 @@ from dtmf_decoder3 import read_dtmf, register_callback, remove_callback
 from singleton_decorator import singleton
 import re
 from threading import Timer
+from multiprocessing import shared_memory
 
 import logging
 logger = logging.getLogger('rootLogger')
+
+SHM_NAME='my_shm67'
 
 # import asyncio
 
@@ -360,9 +363,19 @@ def main4(phoneNum,appCtx):
     callback_rt = lambda x,atmObj=atm:keyPressCallback(x,atmObj)
     register_callback(callback_rt)
 
-    while keepAlive and appCtx['keepAlive']:
-        pass
+     # Attach to an existing shared memory block
+    shm_b = shared_memory.SharedMemory(SHM_NAME)
+    buf1 = shm_b.buf
+    logger.debug('buffer value---->  ' + str(int(buf1[0])))
 
+    while keepAlive and appCtx['keepAlive'] and int(buf1[0])==255:
+        pass
+    
+    if(int(buf1[0])!=255):
+        stopNonBlockingProcess()
+        buf1[0] = 255
+
+    shm_b.close()
     remove_callback()
     logger.debug('Main Process ended')
     destroyAll()
