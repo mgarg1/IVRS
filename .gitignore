@@ -4,3 +4,6 @@ venv/
 __pycache__/
 src/sensitive.py
 src/phoneDB.json
+.vscode/
+logging.conf
+src/logging.conf

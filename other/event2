@@ -43,6 +43,27 @@ logger = logging.getLogger(__name__)
 
 ENTER_PHONE_NUM, CONFIRM_DATE, CONFIRMATION, SEL_DATE  = range(4)
 
+def cancelBooking_start(update: Update, context: CallbackContext) -> int:
+    """Starts the conversation and asks the user about their gender."""
+    
+    phoneNum = None
+    msgs = update.message.text.split()
+    
+    if len(msgs) > 1 and re.match(r"^[0-9]{10}$", msgs[1]):
+        phoneNum = msgs[1]
+        # context.user_data["key"] = querydata
+        context.chat_data["mg_data"] = {'phone_num':phoneNum}
+
+    if not phoneNum:
+        update.message.reply_text(
+            'Enter correct 10-digit phone number without 0\n'
+            'Send /cancel to stop. \n\n'
+        )
+
+        return ENTER_PHONE_NUM
+
+    return SEL_DATE
+
 def start(update: Update, context: CallbackContext) -> int:
     """Starts the conversation and asks the user about their gender."""
     
@@ -179,6 +200,19 @@ def main() -> None:
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('book', start)],
+        states={
+            ENTER_PHONE_NUM: [MessageHandler(Filters.regex(r'^[0-9]{10}$'), enter_phone_num)],
+            SEL_DATE:[MessageHandler(Filters.text, selectDate)],
+            #TODO: regex for Date
+            CONFIRM_DATE: [MessageHandler(Filters.text, confirm_date)],
+            CONFIRMATION: [MessageHandler(Filters.regex('^(NO|YES)$'), book_appointment)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler2 = ConversationHandler(
+        entry_points=[CommandHandler('cancelBooking', cancelBooking_start)],
         states={
             ENTER_PHONE_NUM: [MessageHandler(Filters.regex(r'^[0-9]{10}$'), enter_phone_num)],
             SEL_DATE:[MessageHandler(Filters.text, selectDate)],

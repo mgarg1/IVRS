@@ -12,7 +12,7 @@ from multiprocessing import shared_memory
 import logging
 logger = logging.getLogger('rootLogger')
 
-SHM_NAME='my_shm67'
+SHM_NAME='my_shm68'
 
 # import asyncio
 

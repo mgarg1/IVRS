@@ -24,7 +24,7 @@ def findNextDates(numOfDays=5,startDate=None):
 
     if not startDate:
         startDate = datetime.now()
-        if startDate.hour > 11: # If calling after 11 am then you will get tomorrow's number
+        if startDate.hour > 9: # If calling after 11 am then you will get tomorrow's number
             currDelta = 1
 
     days = []
@@ -47,8 +47,8 @@ def allAptsOnDate(bookDate,obfuscate=True):
     #phoneData = Query()
     totalBookings = phoneDB.search(where('bookDate') == bookDate)
     booking_data = 'date: ' + bookDate + '\n'
-    # totalBookings_sorted = sorted(totalBookings, key=lambda k: int(k['tokenNum'])) 
-    for i in totalBookings:
+    totalBookings_sorted = sorted(totalBookings, key=lambda k: int(k['tokenNum'])) 
+    for i in totalBookings_sorted:
         if obfuscate:
             booking_data += '%s. ####%s' % (i['tokenNum'],i['phoneNum'][-6:])
         else:
