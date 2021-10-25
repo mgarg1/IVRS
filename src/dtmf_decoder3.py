@@ -6,12 +6,17 @@ logger = logging.getLogger('rootLogger')
 # Q1,Q2,Q3,Q4,SDT = 8,10,12,16,18
 Q1, Q2, Q3, Q4, SDT = 29, 31, 33, 35, 37
 INBITS = [Q1, Q2, Q3, Q4, SDT]
+GSM_RST = 12
+OUTBITS = [GSM_RST]
 
+def gsm_rst():
+    GPIO.output(GSM_RST, GPIO.LOW)
 
 def gpio_initialize():
     logger.debug(' gpio_init called-*')
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(INBITS, GPIO.IN)
+    GPIO.setup(OUTBITS, GPIO.OUT)
 
 def read_dtmf():
     in3, in2, in1, in0 = GPIO.input(Q4), GPIO.input(Q3), GPIO.input(Q2), GPIO.input(Q1)
