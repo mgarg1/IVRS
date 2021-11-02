@@ -1,4 +1,5 @@
-import os,time,sys
+import time
+import sys
 import serial
 
 def convert_to_string(buf):
@@ -57,7 +58,7 @@ class SIM800L:
         if waitfor>1000:
             time.sleep((waitfor-1000)/1000)
         buf=self.ser.readline() #discard linefeed etc
-        #print(buf)
+        print(buf)
         buf=self.ser.readline()
         if not buf:
             return None
@@ -73,17 +74,25 @@ class SIM800L:
                     self.savbuf += buf+'\n'
         return result
 
+    def check_network(self):
+        result = self.command('AT+CREG\n')
+        return result
+
     def answer_call(self):
         result = self.command('ATA\n')
-        print('result is--> ')
-
+        # print('result is--> ')
         #print(result)
 
     def end_call(self):
-        result = self.command('ATH\n')
+        # https://stackoverflow.com/questions/14756791/terminating-a-voice-call-via-at-command
+        result = self.command('ATH\n',1)
+        print('result of end call - ')
+        print(result)
+        
 
     def send_sms(self,destno,msgtext):
         result = self.command('AT+CMGS="{}"\n'.format(destno),99,5000,msgtext+'\x1A')
+        time.sleep(5)
         if result and result=='>' and self.savbuf:
             params = self.savbuf.split(':')
             if params[0]=='+CUSD' or params[0] == '+CMGS':
@@ -98,9 +107,9 @@ class SIM800L:
                 params2 = params[0].split(':')
                 if params2[0]=='+CMGR':
                     number = params[1].replace('"',' ').strip()
-                    date   = params[3].replace('"',' ').strip()
-                    time   = params[4].replace('"',' ').strip()
-                    return  [number,date,time,self.savbuf]
+                    date_data   = params[3].replace('"',' ').strip()
+                    time_data   = params[4].replace('"',' ').strip()
+                    return  [number,date_data,time_data,self.savbuf]
         return None
 
     def delete_sms(self,id):
@@ -126,9 +135,16 @@ class SIM800L:
                 # extra readline to eataway the empty line
                 buf=self.ser.readline()
                 buf=self.ser.readline()
-                phoneNum = buf[buf.index('+CLIP:')+7:].split(',')[0]
-                #print(phoneNum)
-                self.incoming_action(phoneNum)
+                # print(buf)                
+                phoneNum=''
+                if buf.find(b'+CLIP:') != -1:
+                    phoneNum = buf[buf.index(b'+CLIP:')+7:].split(b',')[0]
+                    # print('phoneNum extr - ' + str(phoneNum))
+                phoneNum2 = [s for s in str(phoneNum) if s.isdigit()]
+                phoneNum2 = ''.join(phoneNum2)
+                # print('phone Num is:')
+                # print(phoneNum2)
+                self.incoming_action(str(phoneNum2))
 
     def read_and_delete_all(self):
         try:

@@ -1,14 +1,12 @@
 click
-Flask
 itsdangerous
 Jinja2
 MarkupSafe
 tinydb
 Werkzeug
-gTTS
 RPi.GPIO
-vlc-ctrl
 requests
 singleton-decorator
 python-telegram-bot
+pyserial==3.5
 psutil

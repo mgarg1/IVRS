@@ -3,7 +3,7 @@ import os
 from dataAccess import findNextDates, isNumRegistered, storeBooking, cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess, stopNonBlockingProcess, key2file, key2fileWithoutMap, waitForJoin
 from phoneCmds import registerCallback
-from dtmf_decoder3 import read_dtmf, register_callback, remove_callback, gpio_initialize, gpio_clean, gsm_rst
+from dtmf_decoder3 import read_dtmf, register_callback, remove_callback, gpio_initialize, gpio_clean, gsm_rst, gsm_power_on
 from singleton_decorator import singleton
 import re
 from threading import Timer
@@ -17,7 +17,7 @@ SHM_NAME='my_shm68'
 
 atm = None
 
-sim800l=SIM800L('/dev/serial0')
+sim800l=SIM800L('/dev/serial0',9600)
 #sim800l=SIM800L('/dev/ttyAMA0')
 sim800l.setup()
 
@@ -123,7 +123,7 @@ class talkState(State):
         self.audioList = [key2file('callback')]
         self.speak()
         # resMsg='Call karne ke liye dhanywad.Aapse koi representative jald hi contact kerenge. callback_registered'
-        # atm.state = exitState(resMsg)
+        # atm.state = exitState(resMsg,phoneNum)
     
     def press1(self, atm):
         pass
@@ -181,7 +181,9 @@ def commonExit(msg,phoneNum):
     # destroyAll()
     # # can write to someplace
     logger.debug('pid - %s', str(os.getpid()))
-    sim800l.send_sms(phoneNum,msg)
+    
+    if phoneNum:
+        sim800l.send_sms(phoneNum,msg)
     checkEndCall()
     # global retVal
     # retVal=msg
@@ -196,9 +198,9 @@ def commonExit(msg,phoneNum):
 class exitState(State):
     idleTime = 15.0
 
-    def __init__(self, resMsg):
+    def __init__(self, resMsg, phoneNum=None):
         logger.debug('exitState: %s', resMsg)
-        commonExit('exitState:' + resMsg)
+        commonExit('exitState:' + resMsg, phoneNum)
 
     def press1(self,  *unused):
         pass
@@ -223,7 +225,7 @@ class confirmState(State):
         self.audioList = [key2file('booked')]
         self.speak()
         resStr = 'Appointment confirmed!! \nDate - ' + self.bookDate + ' , \nToken number - ' + tokenNum + ' \n-Mayuri Hospital'
-        atm.state = exitState(resStr)
+        atm.state = exitState(resStr,atm.phoneNum)
 
     def press2(self, atm):
         atm.state = bookState()
@@ -249,7 +251,7 @@ class alreadyState(State):
         self.audioList = [key2file('cancelled')]
         self.speak()
         resStr = 'Aapka ' + self.existingBookingDate + ' ka appointment cancel hogaya hai \n- Mayuri Hospital'
-        atm.state = exitState(resStr)
+        atm.state = exitState(resStr,atm.phoneNum)
 
     def press9(self, atm):
         atm.state = talkState(atm.phoneNum)
@@ -314,7 +316,7 @@ def remindToPress(atmObj):
 def noResponseExit():
     startNonBlockingProcess([key2file('timeout')],True)
     logger.debug('reached in noResponseExit')
-    commonExit('no response exit','')
+    commonExit('no response exit',None)
     #os.kill(os.getpid(), signal.SIGTERM)
 
 
@@ -396,9 +398,10 @@ def keyPressCallback(channel,atmObj):
 #     return retVal
 
 def answerCall(callerId):
+    #print('callerId is')
     phoneNum = callerId[-10:]
     global atm
-    
+    #print(phoneNum)
     atm = ATM(phoneNum)
     atm.reset(phoneNum)
 
@@ -422,18 +425,24 @@ def checkEndCall():
     destroyAll()
     del atm
     atm = None
+    print('Ending call now')
+    sim800l.end_call()
 
 def resetGSMHAT():
-    gsm_rst()
-    #pass
+    gsm_power_on()
 
 def main4():
     gpio_initialize()
     resetGSMHAT()
+    #time.sleep(10)
+    #if not isNetworkReg():
+        #send telegram message
+        #wait and re-check
 
+    sim800l.callback_incoming(answerCall)
+    sim800l.callback_no_carrier(checkEndCall)
+    
     while True:
-        sim800l.callback_incoming(answerCall)
-        sim800l.callback_no_carrier(checkEndCall)
         sim800l.check_incoming()
 
     gpio_clean()

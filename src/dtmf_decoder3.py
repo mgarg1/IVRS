@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import logging
+import time
 
 logger = logging.getLogger('rootLogger')
 
@@ -7,10 +8,23 @@ logger = logging.getLogger('rootLogger')
 Q1, Q2, Q3, Q4, SDT = 29, 31, 33, 35, 37
 INBITS = [Q1, Q2, Q3, Q4, SDT]
 GSM_RST = 12
-OUTBITS = [GSM_RST]
+GSM_PWR = 11
+OUTBITS = [GSM_RST, GSM_PWR]
 
 def gsm_rst():
+    GPIO.output(GSM_RST, GPIO.HIGH)
+    time.sleep(1)
     GPIO.output(GSM_RST, GPIO.LOW)
+    # time.sleep(10)
+    print('gsm reset done')
+
+
+def gsm_power_on():
+    GPIO.output(GSM_PWR, GPIO.HIGH)
+    time.sleep(1)
+    GPIO.output(GSM_PWR, GPIO.LOW)
+    print('gsm power on')
+    
 
 def gpio_initialize():
     logger.debug(' gpio_init called-*')
