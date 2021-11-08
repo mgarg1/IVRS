@@ -1,0 +1,6 @@
+## TODO - BUGS
+- [ ] while removing the stale entries from the DB make a backup to central server
+- [ ] when making a holiday - send sms to all members that your reservation is cancelled pls book again for another appointment
+- [ ] enable logger after removing flask file initialize from app_gsm
+- [ ] replace vlc with lightweight audio player
+- [ ] include timing in the message most probably in hindi

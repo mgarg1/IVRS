@@ -1,12 +1,13 @@
 import abc
 import os
+import threading
 from dataAccess import findNextDates, isNumRegistered, storeBooking, cancelBooking
 from dateToNum import date2audioFiles, startNonBlockingProcess, stopNonBlockingProcess, key2file, key2fileWithoutMap, waitForJoin
 from phoneCmds import registerCallback
 from dtmf_decoder3 import read_dtmf, register_callback, remove_callback, gpio_initialize, gpio_clean, gsm_rst, gsm_power_on
 from singleton_decorator import singleton
 import re
-from threading import Timer
+import time
 # from multiprocessing import shared_memory
 from sim800l import SIM800L
 
@@ -182,9 +183,11 @@ def commonExit(msg,phoneNum):
     # # can write to someplace
     logger.debug('pid - %s', str(os.getpid()))
     
+    sim800l.end_call()
     if phoneNum:
         sim800l.send_sms(phoneNum,msg)
-    checkEndCall()
+    # time.sleep(3)
+    cleanupAfterCallEnd()
     # global retVal
     # retVal=msg
     # global keepAlive
@@ -200,7 +203,7 @@ class exitState(State):
 
     def __init__(self, resMsg, phoneNum=None):
         logger.debug('exitState: %s', resMsg)
-        commonExit('exitState:' + resMsg, phoneNum)
+        commonExit(resMsg, phoneNum)
 
     def press1(self,  *unused):
         pass
@@ -308,12 +311,24 @@ class ATM:
 # if __name__ == '__main__':
 #     asyncio.run(main2())
 
+clearAllTimer = False
+
 def remindToPress(atmObj):
+    global clearAllTimer
+    if clearAllTimer:
+        return
+    print (threading.current_thread())
     startNonBlockingProcess([key2file('retry')],True)
-    timer3 = Timer(2.0, atmObj.state.speak)
-    timer3.start()
+    if atmObj:
+        timer3 = threading.Timer(2.0, atmObj.state.speak)
+        timer3.start()
+    else:
+        print('atmObj is None')
 
 def noResponseExit():
+    global clearAllTimer
+    if clearAllTimer:
+        return
     startNonBlockingProcess([key2file('timeout')],True)
     logger.debug('reached in noResponseExit')
     commonExit('no response exit',None)
@@ -323,27 +338,43 @@ def noResponseExit():
 timer1, timer2 = None, None
 
 def stop_Timer():
+    print('inside Stop Timer')
     global timer1
     global timer2
+
+    thread_list = threading.enumerate()
+    for i in thread_list:
+        print(i)
+
     if timer1:
         timer1.cancel()
+        #if timer1.is_alive():
+        #    timer1.join()
+        timer1 = None
+    
     if timer2:
         timer2.cancel()
+        #if timer2.is_alive():
+        #    timer2.join()
+        timer2 = None
 
 def init_Timer(idleTime,atmObj):
     global timer1
     global timer2
-
+    print(' --- init_Timer ---')
     stop_Timer()
         
-    timer1 = Timer(idleTime + 10.0, remindToPress,[atmObj])
+    timer1 = threading.Timer(idleTime + 10.0, remindToPress,[atmObj])
+    timer1.setName('remindToPress')
     timer1.start()
 
-    timer2 = Timer(idleTime + 40.0, noResponseExit)
+    timer2 = threading.Timer(idleTime + 40.0, noResponseExit)
+    timer1.setName('noResponseExit')
     timer2.start()
     
 
 def destroyAll():
+    print('destroying all')
     stopNonBlockingProcess()
     stop_Timer()
     # gpio_clean()
@@ -354,54 +385,22 @@ def keyPressCallback(channel,atmObj):
     if not keyPressed:    
         return
 
-    logger.debug('key pressed - %s',str(keyPressed))
+    print('key pressed - %s',str(keyPressed))
     if atmObj:
         atmObj.press(keyPressed)
     else:
         logger.critical('invalid atmObj')
     init_Timer(atmObj.state.idleTime,atmObj)
 
-# def main4(phoneNum):
-#     #sys.stdout.flush()
-#     # destroyAll()
-#     global keepAlive
-#     keepAlive = True
-#     # gpio_initialize()
-#     atm = ATM(phoneNum)
-#     atm.reset(phoneNum)
-
-#     init_Timer(atm.state.idleTime,atm)
-    
-#     callback_rt = lambda x,atmObj=atm:keyPressCallback(x,atmObj)
-#     register_callback(callback_rt)
-
-#      # Attach to an existing shared memory block
-#     shm_b = shared_memory.SharedMemory(SHM_NAME)
-#     buf1 = shm_b.buf
-#     logger.debug('buffer value---->  ' + str(int(buf1[0])))
-
-#     while keepAlive and appCtx['keepAlive'] and int(buf1[0])==255:
-#         pass
-    
-#     if(int(buf1[0])!=255):
-#         stopNonBlockingProcess()
-#         buf1[0] = 255
-
-#     shm_b.close()
-#     remove_callback()
-#     logger.debug('Main Process ended')
-#     destroyAll()
-#     del atm
-#     atm = None
-#     global retVal
-#     logger.debug('\nMain EXITED\n')
-#     return retVal
-
 def answerCall(callerId):
     #print('callerId is')
     phoneNum = callerId[-10:]
     global atm
     #print(phoneNum)
+    while atm != None:
+        print('waiting for the last call to finish')
+        time.sleep(1)
+
     atm = ATM(phoneNum)
     atm.reset(phoneNum)
 
@@ -415,32 +414,24 @@ def answerCall(callerId):
 
     sim800l.answer_call()
 
-def cleanCall():
-    pass
-
-def checkEndCall():
+def cleanupAfterCallEnd() -> None:
     global atm
     print('Call Ended')
     remove_callback()
     destroyAll()
-    del atm
+    del atm 
     atm = None
-    print('Ending call now')
-    sim800l.end_call()
-
-def resetGSMHAT():
-    gsm_power_on()
 
 def main4():
     gpio_initialize()
-    resetGSMHAT()
+    gsm_power_on()
     #time.sleep(10)
     #if not isNetworkReg():
         #send telegram message
         #wait and re-check
 
     sim800l.callback_incoming(answerCall)
-    sim800l.callback_no_carrier(checkEndCall)
+    sim800l.callback_no_carrier(cleanupAfterCallEnd)
     
     while True:
         sim800l.check_incoming()
@@ -448,12 +439,3 @@ def main4():
     gpio_clean()
 
 main4()
-
-# def preMain():
-#     if len(sys.argv) != 2:
-#         logger.debug('invalid argument list')
-#     else:
-#         phoneNum=str(sys.argv[1])
-#         logger.debug('phone num recvd -> ' + phoneNum)
-#         logger.debug('pid - ' + str(os.getpid()))
-#         main3(phoneNum)

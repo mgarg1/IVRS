@@ -57,9 +57,15 @@ class SIM800L:
             self.ser.write(msgtext.encode())
         if waitfor>1000:
             time.sleep((waitfor-1000)/1000)
-        buf=self.ser.readline() #discard linefeed etc
-        print(buf)
-        buf=self.ser.readline()
+        
+        buf=None
+        if self.ser.in_waiting:
+            buf=self.ser.readline() #discard linefeed etc
+            print(buf)
+        if self.ser.in_waiting:
+            buf=self.ser.readline() #discard linefeed etc
+            print(buf)
+        
         if not buf:
             return None
         result = convert_to_string(buf)

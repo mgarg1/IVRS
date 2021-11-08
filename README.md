@@ -25,10 +25,6 @@ lxterminal --working-directory="/home/pi/IVRS" -e "bash -c \"source /home/pi/IVR
 - [ ] backup automate app flows
 - [ ] remove DTMF encoder hardware
 
-## TODO - BUGS
-- [ ] while removing the stale entries from the DB make a backup to central server
-- [ ] when making a holiday - send sms to all members that your reservation is cancelled pls book again for another appointment
-
 ## Linux DTMF Experiment
 ```bash
 apt-get install multimon-ng
@@ -86,3 +82,10 @@ curl -X POST \
 * DTMF generator - https://www.audiocheck.net/audiocheck_dtmf.php
 * Usb Audio Card Setup - https://www.raspberrypi-spy.co.uk/2019/06/using-a-usb-audio-device-with-the-raspberry-pi/
 * Singleton - https://pypi.org/project/singleton-decorator/
+
+## Debugging Tips:
+
+* [VNC] Cannot currently show the dekstop
+* solution is change the resolution settings -> sudo raspi-config > .... > resolution > highest resolution
+
+
