@@ -301,16 +301,6 @@ class ATM:
         eval(funName)
 
 
-# async def main2():
-#    atm = ATM()
-#    while(1):
-#        timer = Timer(2, timeout_callback)
-#        inRes = input()
-#        funName = atm.press(int(inRes))
-
-# if __name__ == '__main__':
-#     asyncio.run(main2())
-
 clearAllTimer = False
 
 def remindToPress(atmObj):
@@ -342,9 +332,9 @@ def stop_Timer():
     global timer1
     global timer2
 
-    thread_list = threading.enumerate()
-    for i in thread_list:
-        print(i)
+    # thread_list = threading.enumerate()
+    # for i in thread_list:
+    #     print(i)
 
     if timer1:
         timer1.cancel()
@@ -392,6 +382,17 @@ def keyPressCallback(channel,atmObj):
         logger.critical('invalid atmObj')
     init_Timer(atmObj.state.idleTime,atmObj)
 
+def keyPressCallback2(keyPressed,atmObj):
+    stop_Timer()
+    if not keyPressed:    
+        return
+    print('key pressed - %s',str(keyPressed))
+    if atmObj:
+        atmObj.press(keyPressed)
+    else:
+        logger.critical('invalid atmObj')
+    init_Timer(atmObj.state.idleTime,atmObj)
+
 def answerCall(callerId):
     #print('callerId is')
     phoneNum = callerId[-10:]
@@ -408,7 +409,9 @@ def answerCall(callerId):
     
     callback_rt = lambda x,atmObj=atm:keyPressCallback(x,atmObj)
     register_callback(callback_rt)
-
+    # callback_rt = lambda x,atmObj=atm:keyPressCallback2(x,atmObj)
+    # sim800l.callback_dtmf(callback_rt)
+    
     print('answering call')
     print(callerId)
 

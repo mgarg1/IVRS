@@ -22,6 +22,7 @@ class SIM800L:
         self.incoming_action = None
         self.no_carrier_action = None
         self.clip_action = None
+        self.dtmf_action = None
         self._clip = None
         self.msg_action = None
         self._msgid = 0
@@ -33,12 +34,16 @@ class SIM800L:
         self.command('AT+CMGF=1\n')    # plain text SMS
         self.command('AT+CLTS=1\n')    # enable get local timestamp mode
         self.command('AT+CSCLK=0\n')   # disable automatic sleep
+        self.command('AT+DDET=1\n')    # enable DTMF on
 
     def callback_incoming(self,action):
         self.incoming_action = action
 
     def callback_no_carrier(self,action):
         self.no_carrier_action = action
+
+    def callback_dtmf(self,action):
+        self.dtmf_action = action
 
     def get_clip(self):
         return self._clip
@@ -128,7 +133,15 @@ class SIM800L:
             buf = convert_to_string(buf)
             params=buf.split(',')
 
-            if params[0][0:5] == "+CMTI":
+            if params[0][0:5] == "+DTMF":
+                print('got this key')
+                keyPressed = params[0][7:8]
+                print(keyPressed)
+                # aa.decode('UTF-8')[6:].strip()
+                if self.dtmf_action:
+                    self.dtmf_action(keyPressed)
+
+            elif params[0][0:5] == "+CMTI":
                 self._msgid = int(params[1])
                 if self.msg_action:
                     self.msg_action()

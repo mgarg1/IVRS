@@ -69,10 +69,10 @@ def storeBooking(phoneNum,bookDate):
     newToken = None
     if thisToken:
         maxToken = int(thisToken[0]['maxTokenNum'])
-        if maxToken > 39:
-            newToken = maxToken + 1
-        else:
-            newToken = maxToken + 2
+        # if maxToken > 39:
+        newToken = maxToken + 1
+        # else:
+        #     newToken = maxToken + 2
     else:
         newToken = constants.START_TOKEN_NUM
     #update the maxToken Entry
