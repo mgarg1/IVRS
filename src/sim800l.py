@@ -45,6 +45,10 @@ class SIM800L:
     def callback_dtmf(self,action):
         self.dtmf_action = action
 
+    def callback_dtmf_clear(self):
+        self.dtmf_action = None
+        print('cleared callback')
+
     def get_clip(self):
         return self._clip
 
@@ -134,9 +138,8 @@ class SIM800L:
             params=buf.split(',')
 
             if params[0][0:5] == "+DTMF":
-                print('got this key')
                 keyPressed = params[0][7:8]
-                print(keyPressed)
+                print('key pressed DTMF - %s' % (str(keyPressed)))
                 # aa.decode('UTF-8')[6:].strip()
                 if self.dtmf_action:
                     self.dtmf_action(keyPressed)

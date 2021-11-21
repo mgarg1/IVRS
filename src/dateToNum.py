@@ -45,7 +45,8 @@ def getExternalCmd(filenames):
     if platform in ["linux","linux2"]:
         filenames = ' '.join(filenames)
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
-        cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
+        # cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
+        cmdToRun = '/usr/bin/mpg123 -b 1024  %s >>/dev/null 2>&1' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -81,10 +82,10 @@ def stopNonBlockingProcess():
         logger.debug('trying to terminate - %s', str(currProcess.pid))
         #subprocess.Popen(['vlc-ctrl',  'volume',  '+10%'])
         if currProcess.is_alive():
-            try:
-                subprocess.Popen(['vlc-ctrl',  'stop'])
-            except Exception:
-                pass
+            # try:
+            #     # subprocess.Popen(['vlc-ctrl',  'stop'])
+            # except Exception:
+            #     pass
             logger.debug('terminating - %s', str(currProcess.pid))
             # currProcess.terminate()
             killtree(currProcess.pid)
