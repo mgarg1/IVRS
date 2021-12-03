@@ -297,9 +297,11 @@ class ATM:
             selNum = 'Hash'
 
         logger.debug('recvd - %s',selNum)
-        funName = 'self.state.press' + str(selNum) + '(self)'
-        eval(funName)
-
+         
+        funName = "press" + str(selNum) 
+        if self and self.state:
+            class_method = getattr(self.state,funName) 
+            result = class_method(self)
 
 def remindToPress(atmObj):
     print (threading.current_thread())

@@ -10,6 +10,22 @@
 ## Circuit Diagram
 ![Circuit Diagram](other/images/IVRS.png)
 
+## start on boot in individual screen named sessions 
+```
+IVRS_DIR=/home/pi/Desktop/IVRS
+# start the core app
+screen -S app_gsm -dm bash -c "sleep 5; source $IVRS_DIR/venv/bin/activate && python3 $IVRS_DIR/src/app_gsm.py"
+
+# start the telegram event loop
+screen -S telegram_loop -dm bash -c "source $IVRS_DIR/venv/bin/activate && python3 $IVRS_DIR/src/event_loop_telegram.py"
+
+# some screen shortcuts
+screen -ls
+screen -r <pid>
+# for detaching - ctrl+a, d
+```
+
+
 ## TODO - Enhancement
 - [ ] Automate - keep checking if call is active
 - [ ] Sending message to WhatsApp - https://llamalab.com/automate/community/flows/8315
