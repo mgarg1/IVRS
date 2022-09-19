@@ -13,6 +13,8 @@ import traceback
 from sim800l import SIM800L
 
 import logging
+import logging.handlers
+
 logger = logging.getLogger('rootLogger')
 
 SHM_NAME='my_shm68'
@@ -304,13 +306,13 @@ class ATM:
             result = class_method(self)
 
 def remindToPress(atmObj):
-    print (threading.current_thread())
+    logger.debug(threading.current_thread())
     startNonBlockingProcess([key2file('retry')],True)
     if atmObj:
         timer3 = threading.Timer(2.0, atmObj.state.speak)
         timer3.start()
     else:
-        print('atmObj is None')
+        logger.critical('atmObj is None')
 
 def noResponseExit():
     startNonBlockingProcess([key2file('timeout')],True)
@@ -322,7 +324,7 @@ def noResponseExit():
 timer1, timer2 = None, None
 
 def stop_Timer():
-    print('inside Stop Timer')
+    logger.debug('inside Stop Timer')
     global timer1
     global timer2
 
@@ -338,7 +340,7 @@ def init_Timer(idleTime,atmObj):
     # traceback.print_stack()
     global timer1
     global timer2
-    print(' --- init_Timer ---')
+    logger.debug(' --- init_Timer ---')
         
     timer1 = threading.Timer(idleTime + 10.0, remindToPress,[atmObj])
     timer1.setName('remindToPress')
@@ -362,26 +364,28 @@ def init_Timer(idleTime,atmObj):
 #     init_Timer(atmObj.state.idleTime,atmObj)
 
 def keyPressCallback2(keyPressed,atmObj):
+    global atm
+
     stop_Timer()
     if not keyPressed:
         return
-    print('key pressed - %s' % (str(keyPressed)))
+    logger.debug('key pressed - %s' % (str(keyPressed)))
     if atmObj:
         atmObj.press(keyPressed)
     else:
         logger.critical('invalid atmObj')
 
-    if atmObj: # this is required for the case when keypress result in exitState
+    if atm: # this is required for the case when keypress result in exitState
         stop_Timer()
         init_Timer(atmObj.state.idleTime,atmObj)
 
 def answerCall(callerId):
-    print('in answering callerId is')
+    logger.debug('in answering callerId is')
     phoneNum = callerId[-10:]
     global atm
     #print(phoneNum)
     while atm != None:
-        print('waiting for the last call to finish')
+        logger.critical('waiting for the last call to finish')
         time.sleep(1)
 
     atm = ATM(phoneNum)
@@ -394,17 +398,19 @@ def answerCall(callerId):
     callback_rt = lambda x,atmObj=atm:keyPressCallback2(x,atmObj)
     sim800l.callback_dtmf(callback_rt)
     
-    print('answering call')
-    print(callerId)
-
+    logger.debug('answering call - %s',str(callerId))
     sim800l.answer_call()
 
 def cleanupAfterCallEnd() -> None:
     global atm
-    print('Call Ended')
+    if atm == None:
+        logger.critical('call already ended')
+        return
+
+    logger.debug('Call Ended')
     sim800l.callback_dtmf_clear()
     # remove_callback()
-    print('destroying all')
+    logger.debug('destroying all')
     stopNonBlockingProcess()
     stop_Timer()
     # gpio_clean()
@@ -413,12 +419,29 @@ def cleanupAfterCallEnd() -> None:
     atm = None
 
 def main4():
+    
+    # LOG_FILENAME='logging.conf'
+    LOG_FILENAME='prod.log'
+    # https://docs.python.org/3/library/logger.html#logrecord-attributes
+    # logging.basicConfig(filename=LOG_FILENAME, format='%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s', level=logging.DEBUG)
+    # Add the log message handler to the logger
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d >>> %(message)s')
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1024*1024*50, backupCount=2) #50MB
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+    # logger.propagate = False
+    # logger.fileConfig('./logging.conf')
+
     try:
+	
+        print('initizing now')
         gpio_initialize()
         gsm_power_on()
+        time.sleep(5)
         ret = sim800l.check_network()
-        print('ret val of check_network - ')
-        print(ret)
+        logger.debug('ret val of check_network: %s',str(ret))
         #time.sleep(10)
         #if not isNetworkReg():
             #send telegram message

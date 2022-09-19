@@ -37,16 +37,24 @@ def getExternalCmd(filenames):
     if not isinstance(filenames, list):
         logger.debug('filenames should be a list returning')
 
+    if not filenames:
+        logger.critical("filenames List is empty")
+        return None
+
     for filename in filenames:
         if not os.path.isfile(filename):
             logger.debug ("word File not exist - %s",filename)
             break
 
     if platform in ["linux","linux2"]:
+        filenameList = filenames
         filenames = ' '.join(filenames)
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
         # cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
-        cmdToRun = '/usr/bin/mpg123 -b 1024  %s >>/dev/null 2>&1' % (filenames)
+        #cmdToRun = '/usr/bin/mpg123 -b 1024  %s >>/dev/null 2>&1' % (filenames)
+        
+        cmdToRun = ['/usr/bin/mpg123','-m' ,'-b', '512','-o','pulse', '-q'] + filenameList
+        #cmdToRun = '/usr/bin/mpg123 -b 1024  %s ' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
         filenames = ' '.join(filenames)
@@ -58,7 +66,7 @@ def getExternalCmd(filenames):
 def playAllTracks(cmdToRun):
     ret = None
     try:
-        ret = subprocess.check_output(cmdToRun,shell=True)
+        ret = subprocess.check_output(cmdToRun,shell=False)
     except subprocess.CalledProcessError as e:
         logger.debug('exception in PlayAllTracks - %s',str(e))
 

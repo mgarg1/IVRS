@@ -21,6 +21,7 @@ import constants
 import datetime
 import json
 import pytz
+import subprocess
 
 from dataAccess import findNextDates,storeBooking,allAptsOnDate
 
@@ -42,6 +43,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 ENTER_PHONE_NUM, CONFIRM_DATE, CONFIRMATION, SEL_DATE  = range(4)
+APP_GSM_LOC = '/home/pi/Desktop/IVRS/app_runner.sh'
 
 def start(update: Update, context: CallbackContext) -> int:
     """Starts the conversation and asks the user about their gender."""
@@ -162,6 +164,10 @@ def pubCmd(update: Update, context: CallbackContext) -> None:
     apt_data_text = allAptsOnDate(date_arg,False)
     context.bot.send_message(chat_id=sensitive.TELEGRAM_GROUP_CHATID, text=apt_data_text)
 
+def restartCmd(update: Update, context: CallbackContext) -> None:
+    subprocess.check_output([APP_GSM_LOC],shell=False)    
+    context.bot.send_message(chat_id=sensitive.TELEGRAM_GROUP_CHATID, text='app restarted')
+
 def pubCmd2(context: CallbackContext) -> None:
     pubCmd(None,context)
 
@@ -191,6 +197,7 @@ def main() -> None:
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(CommandHandler("pub", pubCmd))
+    dispatcher.add_handler(CommandHandler("restart", restartCmd))
     
     jobQueue = updater.job_queue
 

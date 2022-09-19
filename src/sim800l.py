@@ -1,6 +1,9 @@
 import time
 import sys
 import serial
+import logging
+
+logger = logging.getLogger('rootLogger')
 
 def convert_to_string(buf):
     try:
@@ -18,6 +21,7 @@ class SIM800L:
         try:
             self.ser=serial.Serial(port,baudrate=baud, timeout=1)
         except Exception as e:
+            logger.error('Error in initializing serial')
             sys.exit("Error: {}".format(e))
         self.incoming_action = None
         self.no_carrier_action = None
@@ -47,7 +51,7 @@ class SIM800L:
 
     def callback_dtmf_clear(self):
         self.dtmf_action = None
-        print('cleared callback')
+        logger.debug('cleared callback')
 
     def get_clip(self):
         return self._clip
@@ -70,10 +74,10 @@ class SIM800L:
         buf=None
         if self.ser.in_waiting:
             buf=self.ser.readline() #discard linefeed etc
-            print(buf)
+            logger.debug(buf)
         if self.ser.in_waiting:
             buf=self.ser.readline() #discard linefeed etc
-            print(buf)
+            logger.debug(buf)
         
         if not buf:
             return None
@@ -101,9 +105,7 @@ class SIM800L:
     def end_call(self):
         # https://stackoverflow.com/questions/14756791/terminating-a-voice-call-via-at-command
         result = self.command('ATH\n',1)
-        print('result of end call - ')
-        print(result)
-        
+        logger.debug('result of end call - %s', str(result))        
 
     def send_sms(self,destno,msgtext):
         result = self.command('AT+CMGS="{}"\n'.format(destno),99,5000,msgtext+'\x1A')
@@ -139,7 +141,7 @@ class SIM800L:
 
             if params[0][0:5] == "+DTMF":
                 keyPressed = params[0][7:8]
-                print('key pressed DTMF - %s' % (str(keyPressed)))
+                logger.debug('key pressed DTMF - %s' % (str(keyPressed)))
                 # aa.decode('UTF-8')[6:].strip()
                 if self.dtmf_action:
                     self.dtmf_action(keyPressed)
@@ -153,7 +155,7 @@ class SIM800L:
                 self.no_carrier_action()
 
             elif params[0] == "RING" or params[0][0:5] == "+CLIP":
-                print('MG - RINGING')
+                logger.debug('MG - RINGING')
                 # extra readline to eataway the empty line
                 buf=self.ser.readline()
                 buf=self.ser.readline()

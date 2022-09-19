@@ -16,14 +16,14 @@ def gsm_rst():
     time.sleep(1)
     GPIO.output(GSM_RST, GPIO.LOW)
     # time.sleep(10)
-    print('gsm reset done')
+    logger.debug('gsm reset done')
 
 
 def gsm_power_on():
     GPIO.output(GSM_PWR, GPIO.HIGH)
     time.sleep(1)
     GPIO.output(GSM_PWR, GPIO.LOW)
-    print('gsm power on')
+    logger.debug('gsm power on')
     
 
 def gpio_initialize():
