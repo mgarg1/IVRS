@@ -50,7 +50,7 @@ def getExternalCmd(filenames):
         filenameList = filenames
         filenames = ' '.join(filenames)
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd -Idummy' % (filenames)
-        # cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
+        #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
         #cmdToRun = '/usr/bin/mpg123 -b 1024  %s >>/dev/null 2>&1' % (filenames)
         
         cmdToRun = ['/usr/bin/mpg123','-m' ,'-b', '512','-o','pulse', '-q'] + filenameList
@@ -66,7 +66,7 @@ def getExternalCmd(filenames):
 def playAllTracks(cmdToRun):
     ret = None
     try:
-        ret = subprocess.check_output(cmdToRun,shell=False)
+        ret = subprocess.check_output(cmdToRun,shell=False, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         logger.debug('exception in PlayAllTracks - %s',str(e))
 

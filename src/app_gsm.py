@@ -436,7 +436,7 @@ def main4():
 
     try:
 	
-        print('initizing now')
+        print('initializing now')
         gpio_initialize()
         gsm_power_on()
         time.sleep(5)

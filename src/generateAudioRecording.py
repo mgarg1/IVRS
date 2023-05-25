@@ -24,7 +24,7 @@ def getHindiNumberString(num):
     return hindi_num
 
 def getHindiDate(date,month,year=None):
-    month_map  =  ['','जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सेप्टैंबर','अक्टूबर','नवम्बर','दिसम्बर']
+    month_map  =  ['','जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर']
     day_hindi = getHindiNumberString(date)
     day_hindi = day_hindi + ' ' + month_map[month]
     if year:
@@ -84,7 +84,7 @@ def generateOtherAudioFiles():
     # audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं . किसी हॉस्पिटल कर्मचारी से बात करने के लिए दो दबाएं', lang='hi', slow=False) 
     # audioObj.save(key2file('welcomeState1'))
 
-    audioObj = gTTS(text='मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं', lang='hi', slow=False) 
+    audioObj = gTTS(text='नमशकार !! मयूरी हॉस्पिटल में आपका स्वागत है . अपॉइंटमेंट बुक करने के लिए एक दबाएं', lang='hi', slow=False) 
     audioObj.save(key2file('welcomeState1'))
 
     # audioObj = gTTS(text='आगे उपलब्ध आठ तारीखों में से एक का चुनाव करें', lang='hi', slow=False) 

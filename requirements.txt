@@ -10,3 +10,4 @@ singleton-decorator
 python-telegram-bot
 pyserial==3.5
 psutil
+gtts

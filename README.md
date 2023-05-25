@@ -25,6 +25,19 @@ screen -r <pid>
 # for detaching - ctrl+a, d
 ```
 
+##crontab 
+* crontab command:
+```
+MAILTO=""
+@reboot sleep 60s;cd /home/pi/Desktop/IVRS/;./runner.sh
+```
+* to view email messages:
+```
+sudo tail -f /var/mail/pi
+```
+# errors
+![No MTA installed](https://cronitor.io/cron-reference/no-mta-installed-discarding-output)
+
 
 ## TODO - Enhancement
 - [ ] Automate - keep checking if call is active
