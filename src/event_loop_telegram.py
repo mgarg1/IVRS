@@ -23,7 +23,9 @@ import json
 import pytz
 import subprocess
 
-from dataAccess import findNextDates,storeBooking,allAptsOnDate
+from dateutil.parser import parse, ParserError
+from dataAccess import findNextDates,storeBooking,allAptsOnDate,addHoliday,listHolidays,clearHolidaysList
+
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
@@ -92,6 +94,27 @@ def enter_phone_num(update: Update, context: CallbackContext) -> int:
         )
 
         return ENTER_PHONE_NUM
+
+def clearHolidayListCmd(update: Update, context: CallbackContext) -> None:
+    msg = 'Clearing this list: \n' + listHolidays()
+    clearHolidaysList()
+    update.message.reply_text(msg)
+
+def listHolidayCmd(update: Update, context: CallbackContext) -> None:
+    msg = 'list of holidays: \n' + listHolidays()
+    update.message.reply_text(msg)
+
+def addHolidayCmd(update: Update, context: CallbackContext) -> None:
+    user_date_args = " ".join(context.args)
+    try:
+        aa = parse(user_date_args)
+        thisDay_str = aa.strftime(constants.DATE_FORMAT)
+        addHoliday(thisDay_str)
+        update.message.reply_text('holiday added successfully')
+        # print(thisDay_str)
+    except ParserError:
+        update.message.reply_text('wrong date string, pls retry')
+        # update.message.reply_text(msg,reply_markup=ReplyKeyboardRemove())
 
 
 def selectDate(update: Update, context: CallbackContext) -> int:
@@ -198,7 +221,10 @@ def main() -> None:
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(CommandHandler("pub", pubCmd))
     dispatcher.add_handler(CommandHandler("restart", restartCmd))
-    
+    dispatcher.add_handler(CommandHandler("add_hol", addHolidayCmd))
+    dispatcher.add_handler(CommandHandler("list_hol", listHolidayCmd))
+    dispatcher.add_handler(CommandHandler("clear_hol", clearHolidayListCmd))
+
     jobQueue = updater.job_queue
 
     # tz = pytz.timezone('Asia/Kolkata')

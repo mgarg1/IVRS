@@ -43,7 +43,7 @@ def totalBookOnDate(bookDate):
     #phoneData = Query()
     return phoneDB.count(where('bookDate') == bookDate)
 
-def allAptsOnDate(bookDate,obfuscate=True):
+def allAptsOnDate(bookDate,obfuscate=True) -> str:
     #phoneData = Query()
     totalBookings = phoneDB.search(where('bookDate') == bookDate)
     booking_data = 'date: ' + bookDate + '\n'
@@ -91,11 +91,22 @@ def removeStaleBooking(staleDate):
     phoneDB.remove(where('bookDate') == staleDate)
     phoneDB.remove(where('tokenDate') == staleDate)
 
+def listHolidays() -> str:
+    fileContents = ''
+    with open(constants.HOLIDAY_DB_FILE, 'r') as file:
+        fileContents = file.read()
+    return fileContents
 
-def addHoliday(newDate):
+def clearHolidaysList() -> None:
+    with open(constants.HOLIDAY_DB_FILE, 'a') as file:
+        file.truncate(0)
+
+def addHoliday(newDate:str) -> None:
+    # thisDay_str = thisDay.strftime(constants.DATE_FORMAT)
     # thisDay.strftime("%d-%B-%Y")
     # Always use date in this format 22-12-2012, 02-01-2012 
     with open(constants.HOLIDAY_DB_FILE, 'a') as file:
+        file.write("\n")
         file.write(newDate)
 
 
