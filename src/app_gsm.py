@@ -451,6 +451,7 @@ def main4():
         sim800l.callback_no_carrier(cleanupAfterCallEnd)
         
         while True:
+            time.sleep(1)
             sim800l.check_incoming()
     
     except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:

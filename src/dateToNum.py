@@ -53,7 +53,7 @@ def getExternalCmd(filenames):
         #cmdToRun = '/usr/bin/vlc %s --volume-step 256 --play-and-exit --no-osd >>/dev/null 2>&1' % (filenames)
         #cmdToRun = '/usr/bin/mpg123 -b 1024  %s >>/dev/null 2>&1' % (filenames)
         
-        cmdToRun = ['/usr/bin/mpg123','-m' ,'-b', '512','-o','pulse', '-q'] + filenameList
+        cmdToRun = ['/usr/bin/mpg123','-v' ,'-m' ,'-b', '512','-o','pulse', '-q'] + filenameList
         #cmdToRun = '/usr/bin/mpg123 -b 1024  %s ' % (filenames)
     elif platform == "win32":
         filenames = [filename.replace('\\','\\\\') for filename in filenames]
