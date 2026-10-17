@@ -117,4 +117,12 @@ curl -X POST \
 * [VNC] Cannot currently show the dekstop
 * solution is change the resolution settings -> sudo raspi-config > .... > resolution > highest resolution
 
+## Fixes After Erasing:
 
+* sudo apt-get install screen
+* sudo apt install mpg123
+* sudo usermod -a -G dialout $USER
+* sudo raspi-config
+** Navigate to Interface Options -> Serial Port.
+** When asked: "Would you like a login shell to be accessible over serial?", select No.
+** When asked: "Would you like the serial port hardware to be enabled?", select Yes.
